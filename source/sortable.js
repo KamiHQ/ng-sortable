@@ -71,6 +71,8 @@
       return $scope.callbacks.accept(sourceItemHandleScope, destScope, destItemScope);
     };
 
+    $scope.selected = [];
+
   }]);
 
   /**

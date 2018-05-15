@@ -430,6 +430,8 @@
       return $scope.callbacks.accept(sourceItemHandleScope, destScope, destItemScope);
     };
 
+    $scope.selected = [];
+
   }]);
 
   /**
@@ -1166,6 +1168,62 @@
         }
       };
     }]);
+
+  mainModule.directive('asSortableItemSelectable', [
+    function () {
+
+      return {
+        require: '^asSortableItem',
+        scope: true,
+        restrict: 'A',
+        controller: 'as.sortable.sortableItemHandleController',
+        link: function (scope, element, attrs, itemController) {
+          scope.itemScope = itemController.scope;
+          var startPosition = {};
+          var threshold = 0; // TODO: move this into config
+
+          var handlePointerDown = function (e) {
+            startPosition.initiated = true;
+            startPosition.clientX = e.clientX;
+            startPosition.clientY = e.clientY;
+          };
+
+          var handlePointerUp = function (e) {
+            if (!startPosition.initiated) {
+              return;
+            }
+            if (e.clientX <= (startPosition.clientX + threshold) &&
+              e.clientX >= (startPosition.clientX - threshold) &&
+              e.clientY <= (startPosition.clientY + threshold) &&
+              e.clientY >= (startPosition.clientY - threshold)
+            ) {
+              handlePointerClick(e);
+            }
+            startPosition.initiated = false;
+          };
+
+          var handlePointerClick = function () {
+            console.log('pointer click');
+          };
+
+          if (window.PointerEvent) {
+            element.on('pointerdown', handlePointerDown);
+            element.on('pointerup', handlePointerUp);
+            element.on('pointercancel', handlePointerUp);
+          } else {
+            element.on('mousedown', handlePointerDown);
+            element.on('mouseup', handlePointerUp);
+            element.on('touchstart', handlePointerDown);
+            element.on('touchend', handlePointerUp);
+            element.on('touchcancel', handlePointerUp);
+          }
+
+        }
+      };
+
+    }
+  ]);
+
 }());
 
 /*jshint indent: 2 */
