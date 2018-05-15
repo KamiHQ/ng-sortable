@@ -13,7 +13,7 @@
     <script src="/source/sortable-item-handle.js"></script>
   </head>
   <body ng-app="demoApp">
-    <div class="rows-container" ng-controller="DemoController">
+    <div as-sortable-group class="rows-container" ng-controller="DemoController">
       <div class="row" ng-repeat="row in rows">
         <div class="row-name" ng-bind="row.name"></div>
         <div class="items-container" as-sortable="sortableOptions" ng-model="row.items">

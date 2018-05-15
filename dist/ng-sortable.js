@@ -35,7 +35,8 @@
       placeHolderClass: 'as-sortable-placeholder',
       dragClass: 'as-sortable-drag',
       hiddenClass: 'as-sortable-hidden',
-      dragging: 'as-sortable-dragging'
+      dragging: 'as-sortable-dragging',
+      selectedClass: 'as-sortable-selected'
     });
 }());
 
@@ -366,6 +367,95 @@
   var mainModule = angular.module('as.sortable');
 
   /**
+   * Directive as sortable group
+   * Defines selected items
+   */
+  mainModule.directive('asSortableGroup',
+    function () {
+      return {
+        restrict: 'A',
+        controller: 'as.sortable.sortableGroupController',
+        scope: true,
+        link: function(scope, element, attrs) {
+          var pointerUpCallback = function(e) {
+            if (e.ctrlKey || e.metaKey) {
+              return;
+            } else {
+              scope.removeAllFromSelected();
+            }
+          };
+
+          if (window.PointerEvent) {
+            window.addEventListener('pointerup', pointerUpCallback, true);
+          } else {
+            window.addEventListener('touchend', pointerUpCallback, true);
+          }
+
+          scope.$on('$destroy', function(){
+            window.removeEventListener('pointerup', pointerUpCallback);
+            window.removeEventListener('touchend', pointerUpCallback);
+          });
+        }
+      };
+    }
+  );
+
+  mainModule.controller('as.sortable.sortableGroupController', ['$scope', function ($scope) {
+
+    this.scope = $scope;
+
+    $scope.toggleAddSelected = function(itemScope) {
+      if ( $scope.isSelected(itemScope) ) {
+        $scope.removeFromSelected(itemScope);
+      } else {
+        $scope.addToSelected(itemScope);
+      }
+    };
+
+    $scope.addToSelected = function(itemScope) {
+      var idx = $scope.selected.indexOf(itemScope);
+      if (idx === -1) {
+        $scope.selected.push(itemScope);
+      }
+      itemScope.select();
+    };
+
+    $scope.removeFromSelected = function(itemScope) {
+      var idx = $scope.selected.indexOf(itemScope);
+      if (idx > -1) {
+        $scope.selected.splice(idx, 1);
+      }
+      itemScope.unselected();
+    };
+
+    $scope.removeAllFromSelected = function(){
+      while ($scope.selected.length > 0) {
+        $scope.removeFromSelected($scope.selected[0]);
+      }
+    };
+
+    $scope.isSelected = function(itemScope){
+      return $scope.selected.indexOf(itemScope) !== -1;
+    };
+
+    $scope.selected = [];
+
+    // Functions associated with moving multiple selected items
+    $scope.dragStart = function(){
+      
+    };
+
+    $scope.dragMove = function(){
+
+    };
+
+    $scope.dragEnd = function(){
+
+    };
+    
+  }]);
+
+  /**
    * Controller for Sortable.
    * @param $scope - the sortable scope.
    */
@@ -430,8 +520,6 @@
       return $scope.callbacks.accept(sourceItemHandleScope, destScope, destItemScope);
     };
 
-    $scope.selected = [];
-
   }]);
 
   /**
@@ -443,16 +531,16 @@
   mainModule.directive('asSortable',
     function () {
       return {
-        require: 'ngModel', // get a hold of NgModelController
+        require: ['?ngModel', '^asSortableGroup'], // get a hold of NgModelController
         restrict: 'A',
         scope: true,
         controller: 'as.sortable.sortableController',
-        link: function (scope, element, attrs, ngModelController) {
+        link: function (scope, element, attrs, ctrl) {
 
           var ngModel, callbacks;
 
-          ngModel = ngModelController;
-
+          ngModel = ctrl[0];
+          scope.groupScope = ctrl[1].scope;
           if (!ngModel) {
             return; // do nothing if no ng-model
           }
@@ -1169,8 +1257,8 @@
       };
     }]);
 
-  mainModule.directive('asSortableItemSelectable', [
-    function () {
+  mainModule.directive('asSortableItemSelectable', ['$timeout',
+    function ($timeout) {
 
       return {
         require: '^asSortableItem',
@@ -1180,12 +1268,24 @@
         link: function (scope, element, attrs, itemController) {
           scope.itemScope = itemController.scope;
           var startPosition = {};
-          var threshold = 0; // TODO: move this into config
+          var threshold = 10; // TODO: move this into config
+          var groupScope = null;
+          $timeout(function(){
+            groupScope = scope.itemScope.sortableScope.groupScope;
+          } ,0);
 
           var handlePointerDown = function (e) {
             startPosition.initiated = true;
             startPosition.clientX = e.clientX;
             startPosition.clientY = e.clientY;
+            if (e.ctrlKey || e.metaKey) {
+              return;
+            } else {
+              if (!groupScope.isSelected(scope.itemScope)) {
+                groupScope.removeAllFromSelected();
+                groupScope.addToSelected(scope.itemScope);
+              }
+            }
           };
 
           var handlePointerUp = function (e) {
@@ -1197,25 +1297,20 @@
               e.clientY <= (startPosition.clientY + threshold) &&
               e.clientY >= (startPosition.clientY - threshold)
             ) {
-              handlePointerClick(e);
+              // Is a click
+              groupScope.addToSelected(scope.itemScope);
             }
             startPosition.initiated = false;
-          };
-
-          var handlePointerClick = function () {
-            console.log('pointer click');
           };
 
           if (window.PointerEvent) {
             element.on('pointerdown', handlePointerDown);
             element.on('pointerup', handlePointerUp);
-            element.on('pointercancel', handlePointerUp);
           } else {
             element.on('mousedown', handlePointerDown);
             element.on('mouseup', handlePointerUp);
             element.on('touchstart', handlePointerDown);
             element.on('touchend', handlePointerUp);
-            element.on('touchcancel', handlePointerUp);
           }
 
         }
@@ -1292,6 +1387,15 @@
           }
           scope.element = element;
           element.data('_scope',scope); // #144, work with angular debugInfoEnabled(false)
+
+          scope.select = function(){
+            element.addClass(sortableConfig.selectedClass);
+          };
+
+          scope.unselected = function(){
+            element.removeClass(sortableConfig.selectedClass);
+          };
+
         }
       };
     }]);

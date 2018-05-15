@@ -19,19 +19,6 @@
     $scope.type = 'handle';
   }]);
 
-  //Check if a node is parent to another node
-  function isParent(possibleParent, elem) {
-    if(!elem || elem.nodeName === 'HTML') {
-      return false;
-    }
-
-    if(elem.parentNode === possibleParent) {
-      return true;
-    }
-
-    return isParent(possibleParent, elem.parentNode);
-  }
-
   /**
    * Directive for sortable item handle.
    */
@@ -178,6 +165,10 @@
             // Set the flag to prevent other items from inheriting the drag event
             dragHandled = true;
             event.preventDefault();
+
+            scope.itemScope.sortableScope.groupScope.dragStart(event);
+            /*
+
             eventObj = $helper.eventObj(event);
             scope.sortableScope = scope.sortableScope || scope.itemScope.sortableScope; //isolate directive scope issue.
             scope.callbacks = scope.callbacks || scope.itemScope.callbacks; //isolate directive scope issue.
@@ -246,6 +237,7 @@
             scope.sortableScope.$apply(function () {
               scope.callbacks.dragStart(dragItemInfo.eventArgs());
             });
+            */
             bindEvents();
           };
 
@@ -277,38 +269,21 @@
           };
 
           /**
-           * Inserts the placeHolder in to the targetScope.
-           *
-           * @param targetElement the target element
-           * @param targetScope the target scope
+           * Fetch scope from element or parents
+           * @param  {object} element Source element
+           * @return {object}         Scope, or null if not found
            */
-          function insertBefore(targetElement, targetScope) {
-            // Ensure the placeholder is visible in the target (unless it's a table row)
-            if (placeHolder.css('display') !== 'table-row') {
-              placeHolder.css('display', 'block');
+          function fetchScope(element) {
+            var scope;
+            while (!scope && element.length) {
+              scope = element.data('_scope');
+              if (!scope) {
+                element = element.parent();
+              }
             }
-            if (!targetScope.sortableScope.options.clone) {
-              targetElement[0].parentNode.insertBefore(placeHolder[0], targetElement[0]);
-              dragItemInfo.moveTo(targetScope.sortableScope, targetScope.index());
-            }
+            return scope;
           }
 
-          /**
-           * Inserts the placeHolder next to the targetScope.
-           *
-           * @param targetElement the target element
-           * @param targetScope the target scope
-           */
-          function insertAfter(targetElement, targetScope) {
-            // Ensure the placeholder is visible in the target (unless it's a table row)
-            if (placeHolder.css('display') !== 'table-row') {
-              placeHolder.css('display', 'block');
-            }
-            if (!targetScope.sortableScope.options.clone) {
-              targetElement.after(placeHolder);
-              dragItemInfo.moveTo(targetScope.sortableScope, targetScope.index() + 1);
-            }
-          }
 
           /**
            * Triggered when drag is moving.
@@ -326,6 +301,8 @@
             if (!dragHandled) {
               return;
             }
+            scope.itemScope.sortableScope.groupScope.dragMove(event);
+            /*
             if (dragElement) {
 
               event.preventDefault();
@@ -398,57 +375,7 @@
                 }
               }
             }
-          };
-
-
-          /**
-           * Fetch scope from element or parents
-           * @param  {object} element Source element
-           * @return {object}         Scope, or null if not found
-           */
-          function fetchScope(element) {
-            var scope;
-            while (!scope && element.length) {
-              scope = element.data('_scope');
-              if (!scope) {
-                element = element.parent();
-              }
-            }
-            return scope;
-          }
-
-
-          /**
-           * Get position of place holder among item elements in itemScope.
-           * @param targetElement the target element to check with.
-           * @returns {*} -1 if placeholder is not present, index if yes.
-           */
-          placeHolderIndex = function (targetElement) {
-            var itemElements, i;
-            // targetElement is placeHolder itself, return index 0
-            if (targetElement.hasClass(sortableConfig.placeHolderClass)){
-              return 0;
-            }
-            // find index in target children
-            itemElements = targetElement.children();
-            for (i = 0; i < itemElements.length; i += 1) {
-              //TODO may not be accurate when elements contain other siblings than item elements
-              //solve by adding 1 to model index of previous item element
-              if (angular.element(itemElements[i]).hasClass(sortableConfig.placeHolderClass)) {
-                return i;
-              }
-            }
-            return -1;
-          };
-
-
-          /**
-           * Check there is no place holder placed by itemScope.
-           * @param targetElement the target element to check with.
-           * @returns {*} true if place holder present.
-           */
-          isPlaceHolderPresent = function (targetElement) {
-            return placeHolderIndex(targetElement) >= 0;
+            */
           };
 
           /**
@@ -478,6 +405,9 @@
               return;
             }
             event.preventDefault();
+            scope.itemScope.sortableScope.groupScope.dragEnd(event);
+            dragHandled = false;
+            /*
             if (dragElement) {
               //rollback all the changes.
               rollbackDragChanges();
@@ -497,6 +427,7 @@
               });
               dragItemInfo = null;
             }
+            */
             unBindEvents();
           };
 
@@ -511,7 +442,8 @@
               return;
             }
             event.preventDefault();
-
+            scope.itemScope.sortableScope.groupScope.dragEnd(event, true);
+            /*
             if (dragElement) {
               //rollback all the changes.
               rollbackDragChanges();
@@ -520,6 +452,7 @@
               });
               dragItemInfo = null;
             }
+            */
             unBindEvents();
           };
 
@@ -611,8 +544,8 @@
       };
     }]);
 
-  mainModule.directive('asSortableItemSelectable', [
-    function () {
+  mainModule.directive('asSortableItemSelectable', ['$timeout',
+    function ($timeout) {
 
       return {
         require: '^asSortableItem',
@@ -622,12 +555,24 @@
         link: function (scope, element, attrs, itemController) {
           scope.itemScope = itemController.scope;
           var startPosition = {};
-          var threshold = 0; // TODO: move this into config
+          var threshold = 10; // TODO: move this into config
+          var groupScope = null;
+          $timeout(function(){
+            groupScope = scope.itemScope.sortableScope.groupScope;
+          } ,0);
 
           var handlePointerDown = function (e) {
             startPosition.initiated = true;
             startPosition.clientX = e.clientX;
             startPosition.clientY = e.clientY;
+            if (e.ctrlKey || e.metaKey) {
+              return;
+            } else {
+              if (!groupScope.isSelected(scope.itemScope)) {
+                groupScope.removeAllFromSelected();
+                groupScope.addToSelected(scope.itemScope);
+              }
+            }
           };
 
           var handlePointerUp = function (e) {
@@ -639,25 +584,20 @@
               e.clientY <= (startPosition.clientY + threshold) &&
               e.clientY >= (startPosition.clientY - threshold)
             ) {
-              handlePointerClick(e);
+              // Is a click
+              groupScope.addToSelected(scope.itemScope);
             }
             startPosition.initiated = false;
-          };
-
-          var handlePointerClick = function () {
-            console.log('pointer click');
           };
 
           if (window.PointerEvent) {
             element.on('pointerdown', handlePointerDown);
             element.on('pointerup', handlePointerUp);
-            element.on('pointercancel', handlePointerUp);
           } else {
             element.on('mousedown', handlePointerDown);
             element.on('mouseup', handlePointerUp);
             element.on('touchstart', handlePointerDown);
             element.on('touchend', handlePointerUp);
-            element.on('touchcancel', handlePointerUp);
           }
 
         }

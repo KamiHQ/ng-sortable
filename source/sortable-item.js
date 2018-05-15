@@ -11,7 +11,7 @@
    *
    * @param $scope - drag item scope
    */
-  mainModule.controller('as.sortable.sortableItemController', ['$scope', function ($scope) {
+  mainModule.controller('as.sortable.sortableItemController', ['$scope', 'sortableConfig', '$helper', '$document', function ($scope, sortableConfig, $helper, $document) {
 
     this.scope = $scope;
 
@@ -36,6 +36,108 @@
     $scope.itemData = function () {
       return $scope.sortableScope.modelValue[$scope.$index];
     };
+
+    /**
+     * Methods for selection
+     *
+     */
+    $scope.select = function(){
+      $scope.element.addClass(sortableConfig.selectedClass);
+    };
+
+    $scope.unselected = function(){
+      $scope.element.removeClass(sortableConfig.selectedClass);
+    };
+
+    /**
+     * Methods for drag and drop
+     *
+     */
+    var placeHolder = null;
+    var placeElement = null;
+
+    $scope.createDragElement = function(clone){
+      if(clone) {
+        return $scope.element.clone();
+      } else {
+        return $scope.element;
+      } 
+    };
+
+    $scope.createPlaceholder = function(append){
+      if (typeof $scope.sortableScope.options.placeholder === 'function') {
+        placeHolder = angular.element($scope.sortableScope.options.placeholder($scope));
+      } else if (typeof $scope.sortableScope.options.placeholder === 'string') {
+        placeHolder = angular.element($scope.sortableScope.options.placeholder);
+      } else {
+        placeHolder = angular.element($document[0].createElement($scope.element.prop('tagName')));
+      }
+      placeHolder.addClass(sortableConfig.placeHolderClass).addClass($scope.sortableScope.options.additionalPlaceholderClass);
+      placeHolder.css('width', $helper.width($scope.element) + 'px');
+      placeHolder.css('height', $helper.height($scope.element) + 'px');
+      if(append && !$scope.sortableScope.options.clone){
+        $scope.element.after(placeHolder);
+      }
+      return placeHolder;
+    };
+
+    $scope.createPlaceElement = function(append){
+      var tagName = $scope.element.prop('tagName');
+      placeElement = angular.element($document[0].createElement(tagName));
+      if (sortableConfig.hiddenClass) {
+        placeElement.addClass(sortableConfig.hiddenClass);
+      }
+      if(append) {
+        $scope.element.after(placeElement);
+      }
+      return placeElement;
+    };
+
+    /**
+     * Inserts the placeHolder in to the targetScope.
+     *
+     * @param targetElement the target element
+     * @param targetScope the target scope
+     */
+    $scope.insertBefore = function(targetElement, targetScope, dragItemsInfo) {
+      console.log("insert before");
+      // Ensure the placeholder is visible in the target (unless it's a table row)
+      if (placeHolder.css('display') !== 'table-row') {
+        placeHolder.css('display', 'block');
+      }
+      if (!targetScope.sortableScope.options.clone) {
+        targetElement[0].parentNode.insertBefore(placeHolder[0], targetElement[0]);
+        dragItemsInfo.moveTo(targetScope.sortableScope, targetScope.index());
+      }
+    }
+
+    /**
+     * Inserts the placeHolder next to the targetScope.
+     *
+     * @param targetElement the target element
+     * @param targetScope the target scope
+     */
+    $scope.insertAfter = function(targetElement, targetScope, dragItemsInfo) {
+      // Ensure the placeholder is visible in the target (unless it's a table row)
+      if (placeHolder.css('display') !== 'table-row') {
+        placeHolder.css('display', 'block');
+      }
+      if (!targetScope.sortableScope.options.clone) {
+        targetElement.after(placeHolder);
+        dragItemsInfo.moveTo(targetScope.sortableScope, targetScope.index() + 1);
+      }
+    }
+
+    $scope.appendPlaceHolder = function(targetElement){
+      targetElement[0].appendChild(placeHolder[0]);
+    }
+
+    $scope.rollbackDragChanges = function(){
+      if (!$scope.sortableScope.cloning) {
+        placeElement.replaceWith($scope.element);
+      }
+      placeHolder.remove();
+    }
 
   }]);
 

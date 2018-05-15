@@ -40,3 +40,7 @@
     -ms-user-select: none;
     user-select: none;
 }
+
+.as-sortable-selected {
+    outline: 3px solid blue!important;
+}

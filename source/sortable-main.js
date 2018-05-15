@@ -35,6 +35,7 @@
       placeHolderClass: 'as-sortable-placeholder',
       dragClass: 'as-sortable-drag',
       hiddenClass: 'as-sortable-hidden',
-      dragging: 'as-sortable-dragging'
+      dragging: 'as-sortable-dragging',
+      selectedClass: 'as-sortable-selected'
     });
 }());

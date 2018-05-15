@@ -216,6 +216,7 @@
                  *          sourceInfo: {index: *, itemScope: (*|.dragItem.sourceInfo.itemScope|$scope.itemScope|itemScope), sortableScope: *},
                  *         moveTo: moveTo, isSameParent: isSameParent, isOrderChanged: isOrderChanged, eventArgs: eventArgs, apply: apply}}
          */
+         /*
         dragItem: function (item) {
 
           return {
@@ -281,6 +282,48 @@
               } else if (!this.parent.options.clone) { // prevent drop inside sortables that specify options.clone = true
                 // clone the model value as well
                 this.parent.insertItem(this.index, angular.copy(this.source.modelValue));
+              }
+            }
+          };
+        },
+        */
+        dragItems: function(items){
+          return {
+            index: null,
+            parent: null,
+            sources: items,
+            isSameParent: function(source){
+              return this.parent.element === source.sortableScope.element;
+            },
+            moveTo: function(parent, index){
+              this.parent = parent;
+              // if the source item is in the same parent, the target index is after the source index and we're not cloning
+              var numberOfSelectedBefore = 0;
+              for(var i = 0; i < this.sources.length; i++){
+                var source = this.sources[i];
+                console.log(index);
+                if (this.isSameParent(source) && source.index() < index && !source.sortableScope.cloning){
+                  numberOfSelectedBefore++;
+                }
+              }
+              index -= numberOfSelectedBefore;
+              this.index = index;
+            },
+            apply: function(){
+              for(var i = 0; i < this.sources.length; i++) {
+                var source = this.sources[i];
+                var parent = this.parent ? this.parent : source.sortableScope;
+                var index = this.index === null ? source.index() : this.index + i;
+                if(!source.sortableScope.cloning){
+                  // if not cloning, remove the item from the source model.
+                  source.sortableScope.removeItem(source.modelValue);
+                  if (parent.options.allowDuplicates || parent.modelValue.indexOf(source.modelValue) < 0) {
+                    parent.insertItem(index, source.modelValue);
+                  }
+                } else if (!parent.options.clone) {
+                  // clone the model value as well
+                  parent.insertItem(index, angular.copy(source.modelValue));
+                }
               }
             }
           };
