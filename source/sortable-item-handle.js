@@ -569,8 +569,10 @@
               return;
             } else {
               if (!groupScope.isSelected(scope.itemScope)) {
-                groupScope.removeAllFromSelected();
-                groupScope.addToSelected(scope.itemScope);
+                scope.$apply(function(){
+                  groupScope.removeAllFromSelected();
+                  groupScope.addToSelected(scope.itemScope);
+                });
               }
             }
           };
@@ -585,7 +587,9 @@
               e.clientY >= (startPosition.clientY - threshold)
             ) {
               // Is a click
-              groupScope.addToSelected(scope.itemScope);
+              scope.$apply(function(){
+                groupScope.addToSelected(scope.itemScope);
+              });
             }
             startPosition.initiated = false;
           };

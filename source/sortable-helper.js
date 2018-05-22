@@ -301,7 +301,6 @@
               var numberOfSelectedBefore = 0;
               for(var i = 0; i < this.sources.length; i++){
                 var source = this.sources[i];
-                console.log(index);
                 if (this.isSameParent(source) && source.index() < index && !source.sortableScope.cloning){
                   numberOfSelectedBefore++;
                 }
@@ -310,13 +309,20 @@
               this.index = index;
             },
             apply: function(){
+              // Remove existing
+              for(var i = 0; i < this.sources.length; i++) {
+                var source = this.sources[i];
+                if(!source.sortableScope.cloning){
+                  // if not cloning, remove the item from the source model.
+                  source.sortableScope.removeItem(source.modelValue);
+                }
+              }
+              // Insert new
               for(var i = 0; i < this.sources.length; i++) {
                 var source = this.sources[i];
                 var parent = this.parent ? this.parent : source.sortableScope;
                 var index = this.index === null ? source.index() : this.index + i;
                 if(!source.sortableScope.cloning){
-                  // if not cloning, remove the item from the source model.
-                  source.sortableScope.removeItem(source.modelValue);
                   if (parent.options.allowDuplicates || parent.modelValue.indexOf(source.modelValue) < 0) {
                     parent.insertItem(index, source.modelValue);
                   }
@@ -325,6 +331,7 @@
                   parent.insertItem(index, angular.copy(source.modelValue));
                 }
               }
+
             }
           };
         },

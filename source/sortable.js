@@ -21,7 +21,9 @@
             if (e.ctrlKey || e.metaKey || scope.dragging) {
               return;
             } else {
-              scope.removeAllFromSelected();
+              scope.$apply(function(){
+                scope.removeAllFromSelected();
+              });
             }
           };
 
@@ -74,8 +76,25 @@
       }
     };
 
-    $scope.isSelected = function(itemScope){
-      return $scope.selected.indexOf(itemScope) !== -1;
+    $scope.isSelected = function(itemScope, hashKey){
+      var index = $scope.selected.indexOf(itemScope);
+      if(index === -1) {
+        if (hashKey === undefined) {
+          return false;
+        } else {
+          for(var i = 0; i < $scope.selected.length; i++){
+            if($scope.selected[i].modelValue.$$hashKey === hashKey){
+              index = i;
+              // Swap out the itemScope to new one
+              $scope.selected[i] = itemScope;
+              break;
+            }
+          }
+          return index !== -1;
+        }
+      } else {
+        return true;
+      }
     };
 
     $scope.selected = [];

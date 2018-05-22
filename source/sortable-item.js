@@ -11,7 +11,7 @@
    *
    * @param $scope - drag item scope
    */
-  mainModule.controller('as.sortable.sortableItemController', ['$scope', 'sortableConfig', '$helper', '$document', function ($scope, sortableConfig, $helper, $document) {
+  mainModule.controller('as.sortable.sortableItemController', ['$scope', 'sortableConfig', '$helper', '$document', '$timeout', function ($scope, sortableConfig, $helper, $document, $timeout) {
 
     this.scope = $scope;
 
@@ -49,6 +49,12 @@
       $scope.element.removeClass(sortableConfig.selectedClass);
     };
 
+    // Recreate when reloads
+    $timeout(function(){
+      if($scope.sortableScope.groupScope.isSelected($scope, $scope.modelValue.$$hashKey)) {
+        $scope.select();
+      }
+    }, 0);
     /**
      * Methods for drag and drop
      *
