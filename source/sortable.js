@@ -17,6 +17,9 @@
         controller: 'as.sortable.sortableGroupController',
         scope: true,
         link: function(scope, element, attrs) {
+          scope.options = {};
+          var callbacks;
+
           var pointerUpCallback = function(e) {
             if (e.ctrlKey || e.metaKey || scope.dragging) {
               return;
@@ -37,6 +40,79 @@
             window.removeEventListener('pointerup', pointerUpCallback);
             window.removeEventListener('touchend', pointerUpCallback);
           });
+
+          callbacks = {orderChanged: null, itemMoved: null, dragStart: null, dragMove:null, dragCancel: null, dragEnd: null, selectionChanged: null};
+
+          /**
+           * Invoked when order of a drag item is changed.
+           *
+           * @param event - the event object.
+           */
+          callbacks.orderChanged = function (event) {
+          };
+
+          /**
+           * Invoked when the item is moved to other sortable.
+           *
+           * @param event - the event object.
+           */
+          callbacks.itemMoved = function (event) {
+          };
+
+          /**
+           * Invoked when the drag started successfully.
+           *
+           * @param event - the event object.
+           */
+          callbacks.dragStart = function (event) {
+          };
+
+          /**
+           * Invoked when the drag move.
+           *
+           * @param itemPosition - the item position.
+           * @param containment - the containment element.
+           * @param eventObj - the event object.
+          */
+          callbacks.dragMove = angular.noop;
+
+          /**
+           * Invoked when the drag cancelled.
+           *
+           * @param event - the event object.
+           */
+          callbacks.dragCancel = function (event) {
+          };
+
+          /**
+           * Invoked when the drag stopped.
+           *
+           * @param event - the event object.
+           */
+          callbacks.dragEnd = function (event) {
+          };
+
+          /**
+           * Invoked when the selection changes.
+           *
+           * @param event - the event object.
+           */
+          callbacks.selectionChanged = function (event) {
+          };
+
+          scope.$watch(attrs.asSortableGroup, function (newVal, oldVal) {
+            angular.forEach(newVal, function (value, key) {
+              if (callbacks[key]) {
+                if (typeof value === 'function') {
+                  callbacks[key] = value;
+                }
+              } else {
+                scope.options[key] = value;
+              }
+            });
+            scope.callbacks = callbacks;
+          }, true);
+
         }
       };
     }
@@ -343,33 +419,12 @@
       return removedItem;
     };
 
-    /**
-     * Checks whether the sortable list is empty.
-     *
-     * @returns {null|*|$scope.modelValue|boolean}
-     */
-    $scope.isEmpty = function () {
-      return ($scope.modelValue && $scope.modelValue.length === 0);
-    };
-
-    /**
-     * Wrapper for the accept callback delegates to callback.
-     *
-     * @param sourceItemHandleScope - drag item handle scope.
-     * @param destScope - sortable target scope.
-     * @param destItemScope - sortable destination item scope.
-     * @returns {*|boolean} - true if drop is allowed for the drag item in drop target.
-     */
-    $scope.accept = function (sourceItemHandleScope, destScope, destItemScope) {
-      return $scope.callbacks.accept(sourceItemHandleScope, destScope, destItemScope);
-    };
-
   }]);
 
   /**
-   * Sortable directive - defines callbacks.
+   * Sortable directive
    * Parent directive for draggable and sortable items.
-   * Sets modelValue, callbacks, element in scope.
+   * Sets modelValue, element in scope.
    * sortOptions also includes a longTouch option which activates longTouch when set to true (default is false).
    */
   mainModule.directive('asSortable',
@@ -381,7 +436,7 @@
         controller: 'as.sortable.sortableController',
         link: function (scope, element, attrs, ctrl) {
 
-          var ngModel, callbacks;
+          var ngModel;
 
           ngModel = ctrl[0];
           scope.groupScope = ctrl[1].scope;
@@ -398,81 +453,11 @@
           scope.rowIndex;
           element.data('_scope',scope); // #144, work with angular debugInfoEnabled(false)
 
-          callbacks = {accept: null, orderChanged: null, itemMoved: null, dragStart: null, dragMove:null, dragCancel: null, dragEnd: null};
-
-          /**
-           * Invoked to decide whether to allow drop.
-           *
-           * @param sourceItemHandleScope - the drag item handle scope.
-           * @param destSortableScope - the drop target sortable scope.
-           * @param destItemScope - the drop target item scope.
-           * @returns {boolean} - true if allowed for drop.
-           */
-          callbacks.accept = function (sourceItemHandleScope, destSortableScope, destItemScope) {
-            return true;
-          };
-
-          /**
-           * Invoked when order of a drag item is changed.
-           *
-           * @param event - the event object.
-           */
-          callbacks.orderChanged = function (event) {
-          };
-
-          /**
-           * Invoked when the item is moved to other sortable.
-           *
-           * @param event - the event object.
-           */
-          callbacks.itemMoved = function (event) {
-          };
-
-          /**
-           * Invoked when the drag started successfully.
-           *
-           * @param event - the event object.
-           */
-          callbacks.dragStart = function (event) {
-          };
-
-          /**
-           * Invoked when the drag move.
-           *
-           * @param itemPosition - the item position.
-           * @param containment - the containment element.
-           * @param eventObj - the event object.
-          */
-          callbacks.dragMove = angular.noop;
-
-          /**
-           * Invoked when the drag cancelled.
-           *
-           * @param event - the event object.
-           */
-          callbacks.dragCancel = function (event) {
-          };
-
-          /**
-           * Invoked when the drag stopped.
-           *
-           * @param event - the event object.
-           */
-          callbacks.dragEnd = function (event) {
-          };
-
-          //Set the sortOptions callbacks else set it to default.
+          //Set the sortOptions else set it to default.
           scope.$watch(attrs.asSortable, function (newVal, oldVal) {
             angular.forEach(newVal, function (value, key) {
-              if (callbacks[key]) {
-                if (typeof value === 'function') {
-                  callbacks[key] = value;
-                }
-              } else {
-                scope.options[key] = value;
-              }
+              scope.options[key] = value;
             });
-            scope.callbacks = callbacks;
           }, true);
 
           // Set isDisabled if attr is set, if undefined isDisabled = false
