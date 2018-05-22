@@ -29,6 +29,18 @@
     };
 
     /**
+     * returns the index of the drag item over the sortable group.
+     *
+     * @returns {row: row number, column: index in the current row}
+     */
+    $scope.overAllIndex = function() {
+      return {
+        row: $scope.sortableScope.rowIndex,
+        column: $scope.$index
+      }
+    };
+
+    /**
      * Returns the item model data.
      *
      * @returns {*} - item model value.
@@ -163,6 +175,7 @@
             element.addClass(sortableConfig.itemClass);
           }
           scope.sortableScope = sortableController.scope;
+
           if (ngModelController) {
             ngModelController.$render = function () {
               scope.modelValue = ngModelController.$modelValue;

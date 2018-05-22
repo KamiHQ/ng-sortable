@@ -58,6 +58,7 @@
       var idx = $scope.selected.indexOf(itemScope);
       if (idx === -1) {
         $scope.selected.push(itemScope);
+        $scope.orderSelected();
       }
       itemScope.select();
     };
@@ -76,6 +77,11 @@
       }
     };
 
+    $scope.swapSelected = function(index, newSelected){
+      $scope.selected[index] = newSelected;
+      $scope.orderSelected();
+    }
+
     $scope.isSelected = function(itemScope, hashKey){
       var index = $scope.selected.indexOf(itemScope);
       if(index === -1) {
@@ -86,7 +92,7 @@
             if($scope.selected[i].modelValue.$$hashKey === hashKey){
               index = i;
               // Swap out the itemScope to new one
-              $scope.selected[i] = itemScope;
+              $scope.swapSelected(i, itemScope);
               break;
             }
           }
@@ -95,6 +101,21 @@
       } else {
         return true;
       }
+    };
+
+    $scope.orderSelected = function(){
+      $scope.selected.sort(function(selectedA, selectedB){
+        var a = selectedA.overAllIndex();
+        var b = selectedB.overAllIndex();
+        if(a.row > b.row){
+          return 1;
+        } else if(a.row < b.row){
+          return -1;
+        } else {
+          return a.column >= b.column ? 1 : -1;
+        }
+
+      });
     };
 
     $scope.selected = [];
@@ -374,6 +395,7 @@
           };
           //set the element in scope to be accessed by its sub scope.
           scope.element = element;
+          scope.rowIndex;
           element.data('_scope',scope); // #144, work with angular debugInfoEnabled(false)
 
           callbacks = {accept: null, orderChanged: null, itemMoved: null, dragStart: null, dragMove:null, dragCancel: null, dragEnd: null};
@@ -461,6 +483,11 @@
               }
             }, true);
           }
+
+          // Set row order
+          scope.$watch(attrs.asRowNumber, function (newVal, oldVal) {
+            scope.rowIndex = newVal;
+          });
         }
       };
     });

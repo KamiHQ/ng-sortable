@@ -31,21 +31,12 @@
         controller: 'as.sortable.sortableItemHandleController',
         link: function (scope, element, attrs, itemController) {
 
-          var dragElement, //drag item element.
-            placeHolder, //place holder class element.
-            placeElement,//hidden place element.
-            itemPosition, //drag item element position.
-            dragItemInfo, //drag item data.
-            containment,//the drag container.
-            containerPositioning, // absolute or relative positioning.
-            dragListen,// drag listen event.
-            scrollableContainer, //the scrollable container
+            var dragListen,// drag listen event.
             dragStart,// drag start event.
             dragMove,//drag move event.
             dragEnd,//drag end event.
             dragCancel,//drag cancel event.
             isDraggable,//is element draggable.
-            placeHolderIndex,//placeholder index in items elements.
             bindDrag,//bind drag events.
             unbindDrag,//unbind drag events.
             bindEvents,//bind the drag events.
@@ -167,77 +158,6 @@
             event.preventDefault();
 
             scope.itemScope.sortableScope.groupScope.dragStart(event);
-            /*
-
-            eventObj = $helper.eventObj(event);
-            scope.sortableScope = scope.sortableScope || scope.itemScope.sortableScope; //isolate directive scope issue.
-            scope.callbacks = scope.callbacks || scope.itemScope.callbacks; //isolate directive scope issue.
-
-            if (scope.itemScope.sortableScope.options.clone || (scope.itemScope.sortableScope.options.ctrlClone && event.ctrlKey)) {
-                // Clone option is true
-                // or Ctrl clone option is true & the ctrl key was pressed when the user innitiated drag
-              scope.itemScope.sortableScope.cloning = true;
-            } else {
-              scope.itemScope.sortableScope.cloning = false;
-            }
-
-            // (optional) Scrollable container as reference for top & left offset calculations, defaults to Document
-            scrollableContainer = angular.element($document[0].querySelector(scope.sortableScope.options.scrollableContainer)).length > 0 ?
-              $document[0].querySelector(scope.sortableScope.options.scrollableContainer) : $document[0].documentElement;
-
-            containment = (scope.sortableScope.options.containment)? $helper.findAncestor(element, scope.sortableScope.options.containment):angular.element($document[0].body);
-            //capture mouse move on containment.
-            containment.css('cursor', 'move');
-            containment.css('cursor', '-webkit-grabbing');
-            containment.css('cursor', '-moz-grabbing');
-            containment.addClass('as-sortable-un-selectable');
-
-            // container positioning
-            containerPositioning = scope.sortableScope.options.containerPositioning || 'absolute';
-
-            dragItemInfo = $helper.dragItem(scope);
-            tagName = scope.itemScope.element.prop('tagName');
-
-            dragElement = angular.element($document[0].createElement(scope.sortableScope.element.prop('tagName')))
-              .addClass(scope.sortableScope.element.attr('class')).addClass(sortableConfig.dragClass);
-            dragElement.css('width', $helper.width(scope.itemScope.element) + 'px');
-            dragElement.css('height', $helper.height(scope.itemScope.element) + 'px');
-
-            placeHolder = createPlaceholder(scope.itemScope)
-              .addClass(sortableConfig.placeHolderClass).addClass(scope.sortableScope.options.additionalPlaceholderClass);
-            placeHolder.css('width', $helper.width(scope.itemScope.element) + 'px');
-            placeHolder.css('height', $helper.height(scope.itemScope.element) + 'px');
-
-            placeElement = angular.element($document[0].createElement(tagName));
-            if (sortableConfig.hiddenClass) {
-              placeElement.addClass(sortableConfig.hiddenClass);
-            }
-
-            itemPosition = $helper.positionStarted(eventObj, scope.itemScope.element, scrollableContainer);
-
-            // fill the immediate vacuum.
-            if (!scope.itemScope.sortableScope.options.clone) {
-              scope.itemScope.element.after(placeHolder);
-            }
-
-            if (scope.itemScope.sortableScope.cloning) {
-              // clone option is enabled or triggered, so clone the element.
-              dragElement.append(scope.itemScope.element.clone());
-            }
-            else {
-              // add hidden placeholder element in original position.
-              scope.itemScope.element.after(placeElement);
-              // not cloning, so use the original element.
-              dragElement.append(scope.itemScope.element);
-            }
-
-            containment.append(dragElement);
-            $helper.movePosition(eventObj, dragElement, itemPosition, containment, containerPositioning, scrollableContainer);
-
-            scope.sortableScope.$apply(function () {
-              scope.callbacks.dragStart(dragItemInfo.eventArgs());
-            });
-            */
             bindEvents();
           };
 
@@ -302,80 +222,6 @@
               return;
             }
             scope.itemScope.sortableScope.groupScope.dragMove(event);
-            /*
-            if (dragElement) {
-
-              event.preventDefault();
-
-              eventObj = $helper.eventObj(event);
-
-              // checking if dragMove callback exists, to prevent application
-              // rerenderings on each mouse move event
-              if (scope.callbacks.dragMove !== angular.noop) {
-                scope.sortableScope.$apply(function () {
-                  scope.callbacks.dragMove(itemPosition, containment, eventObj);
-                });
-              }
-
-              targetX = eventObj.pageX - $document[0].documentElement.scrollLeft;
-              targetY = eventObj.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
-
-              //IE fixes: hide show element, call element from point twice to return pick correct element.
-              dragElement.addClass(sortableConfig.hiddenClass);
-              targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
-              dragElement.removeClass(sortableConfig.hiddenClass);
-
-              $helper.movePosition(eventObj, dragElement, itemPosition, containment, containerPositioning, scrollableContainer);
-
-              //Set Class as dragging starts
-              dragElement.addClass(sortableConfig.dragging);
-
-              targetScope = fetchScope(targetElement);
-
-              if (!targetScope || !targetScope.type) {
-                return;
-              }
-              if (targetScope.type === 'handle') {
-                targetScope = targetScope.itemScope;
-              }
-              if (targetScope.type !== 'item' && targetScope.type !== 'sortable') {
-                return;
-              }
-
-              if (targetScope.type === 'item' && targetScope.accept(scope, targetScope.sortableScope, targetScope)) {
-                // decide where to insert placeholder based on target element and current placeholder if is present
-                targetElement = targetScope.element;
-
-                // Fix #241 Drag and drop have trembling with blocks of different size
-                var targetElementOffset = $helper.offset(targetElement, scrollableContainer);
-                if (!dragItemInfo.canMove(itemPosition, targetElement, targetElementOffset)) {
-                  return;
-                }
-
-                var placeholderIndex = placeHolderIndex(targetScope.sortableScope.element);
-                if (placeholderIndex < 0) {
-                  insertBefore(targetElement, targetScope);
-                } else {
-                  if (placeholderIndex <= targetScope.index()) {
-                    insertAfter(targetElement, targetScope);
-                  } else {
-                    insertBefore(targetElement, targetScope);
-                  }
-                }
-              }
-
-              if (targetScope.type === 'sortable') {//sortable scope.
-                if (targetScope.accept(scope, targetScope) &&
-                  !isParent(targetScope.element[0], targetElement[0])) {
-                  //moving over sortable bucket. not over item.
-                  if (!isPlaceHolderPresent(targetElement) && !targetScope.options.clone) {
-                    targetElement[0].appendChild(placeHolder[0]);
-                    dragItemInfo.moveTo(targetScope, targetScope.modelValue.length);
-                  }
-                }
-              }
-            }
-            */
           };
 
           /**
@@ -407,27 +253,6 @@
             event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragEnd(event);
             dragHandled = false;
-            /*
-            if (dragElement) {
-              //rollback all the changes.
-              rollbackDragChanges();
-              // update model data
-              dragItemInfo.apply();
-              scope.sortableScope.$apply(function () {
-                if (dragItemInfo.isSameParent()) {
-                  if (dragItemInfo.isOrderChanged()) {
-                    scope.callbacks.orderChanged(dragItemInfo.eventArgs());
-                  }
-                } else {
-                  scope.callbacks.itemMoved(dragItemInfo.eventArgs());
-                }
-              });
-              scope.sortableScope.$apply(function () {
-                scope.callbacks.dragEnd(dragItemInfo.eventArgs());
-              });
-              dragItemInfo = null;
-            }
-            */
             unBindEvents();
           };
 
@@ -443,16 +268,6 @@
             }
             event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragEnd(event, true);
-            /*
-            if (dragElement) {
-              //rollback all the changes.
-              rollbackDragChanges();
-              scope.sortableScope.$apply(function () {
-                scope.callbacks.dragCancel(dragItemInfo.eventArgs());
-              });
-              dragItemInfo = null;
-            }
-            */
             unBindEvents();
           };
 
