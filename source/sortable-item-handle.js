@@ -221,6 +221,8 @@
             if (!dragHandled) {
               return;
             }
+
+            event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragMove(event);
           };
 

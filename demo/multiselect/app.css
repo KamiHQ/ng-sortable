@@ -16,9 +16,12 @@
 
 .items-container {
   flex: 1;
-  display: flex;
-  flex-direction: row;
-  overflow: auto;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.items-container:hover {
+  overflow-x: scroll;
 }
 
 .item {
@@ -30,4 +33,8 @@
 .as-sortable-drag {
   display: flex;
   flex-direction: row;
+}
+
+.as-sortable-item, .as-sortable-placeholder {
+  display: inline-block!important;
 }
