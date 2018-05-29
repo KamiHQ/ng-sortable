@@ -274,7 +274,7 @@
 
       $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
 
-      if(targetScope.type === 'item') {
+      if(targetScope.type === 'handle') {
         // decide where to insert placeholder based on target element and current placeholder if is present
         targetElement = targetScope.element;
         var placeholderIndex = placeHolderIndex(targetScope.sortableScope.element);
