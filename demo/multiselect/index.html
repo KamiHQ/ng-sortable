@@ -13,10 +13,10 @@
     <script src="/source/sortable-item-handle.js"></script>
   </head>
   <body ng-app="demoApp">
-    <div as-sortable-group class="rows-container" ng-controller="DemoController">
+    <div as-sortable-group="sortableOptions" class="rows-container" ng-controller="DemoController">
       <div class="row" ng-repeat="row in rows">
         <div class="row-name" ng-bind="row.name"></div>
-        <div class="items-container" as-sortable="sortableOptions" as-row-number="$index" ng-model="row.items">
+        <div class="items-container" as-sortable as-row-number="$index" ng-model="row.items">
           <div class="item" as-sortable-item ng-repeat="item in row.items">
             <img class="image" as-sortable-item-handle as-sortable-item-selectable src="image.jpg" width="100"/>
             <div class="item-name" ng-bind="item.name"></div>

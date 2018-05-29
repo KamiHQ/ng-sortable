@@ -290,6 +290,7 @@
     $scope.dragging = false;
 
     $scope.dragStart = function(event){
+      var eventObj = $helper.eventObj(event);
       if($scope.dragging){
         return;
       } else {
@@ -308,10 +309,14 @@
       }
       dragState.containment.append(dragState.dragElementsContainer);
       positionDragElementsContainer(event);
+      $scope.$apply(function(){
+        $scope.callbacks.dragStart(eventObj);
+      });
     };
 
 
     $scope.dragMove = function(event){
+      var eventObj = $helper.eventObj(event);
       positionDragElementsContainer(event);
       var targetX = event.pageX - $document[0].documentElement.scrollLeft;
       var targetY = event.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
@@ -349,9 +354,13 @@
           }
         }
       }
+      $scope.$apply(function(){
+        $scope.callbacks.dragMove(eventObj);
+      });
     };
 
     $scope.dragEnd = function(event, cancel){
+      var eventObj = $helper.eventObj(event);
       if(!$scope.dragging){
         return;
       } else {
@@ -364,12 +373,30 @@
       dragState.dragElementsContainer.remove();
       dragState.dragElementsContainer = null;
 
-      if(!cancel) {
-        $scope.$apply(function(){
+      $scope.$apply(function(){
+        if(cancel) {
+          $scope.callbacks.dragCancel(eventObj);
+        } else {
+          var runCallback = function(){};
+          var eventArgs = dragState.dragItemsInfo.eventArgs();
+          if(dragState.dragItemsInfo.allSameParent()){
+            if(dragState.dragItemsInfo.isOrderChanged()){
+              runCallback = function(){
+                $scope.callbacks.orderChanged(eventArgs);
+              };
+            }
+          } else {
+            runCallback = function(){
+              $scope.callbacks.itemMoved(eventArgs);
+            };
+          }
+
           dragState.dragItemsInfo.apply();
-        });
-      }
-      dragState.dragItemsInfo = null;
+          runCallback();
+          $scope.callbacks.dragEnd(eventObj);
+        }
+        dragState.dragItemsInfo = null;
+      });
     };
     
   }]);

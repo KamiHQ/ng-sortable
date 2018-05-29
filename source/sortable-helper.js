@@ -216,77 +216,6 @@
                  *          sourceInfo: {index: *, itemScope: (*|.dragItem.sourceInfo.itemScope|$scope.itemScope|itemScope), sortableScope: *},
                  *         moveTo: moveTo, isSameParent: isSameParent, isOrderChanged: isOrderChanged, eventArgs: eventArgs, apply: apply}}
          */
-         /*
-        dragItem: function (item) {
-
-          return {
-            index: item.index(),
-            parent: item.sortableScope,
-            source: item,
-            targetElement: null,
-            targetElementOffset: null,
-            sourceInfo: {
-              index: item.index(),
-              itemScope: item.itemScope,
-              sortableScope: item.sortableScope
-            },
-            canMove: function(itemPosition, targetElement, targetElementOffset) {
-              // return true if targetElement has been changed since last call
-              if (this.targetElement !== targetElement) {
-                this.targetElement = targetElement;
-                this.targetElementOffset = targetElementOffset;
-                return true;
-              }
-              // return true if mouse is moving in the last moving direction of targetElement
-              if (itemPosition.dirX * (targetElementOffset.left - this.targetElementOffset.left) > 0 ||
-                  itemPosition.dirY * (targetElementOffset.top - this.targetElementOffset.top) > 0) {
-                this.targetElementOffset = targetElementOffset;
-                return true;
-              }
-              // return false otherwise
-              return false;
-            },
-            moveTo: function (parent, index) {
-              // move the item to a new position
-              this.parent = parent;
-              // if the source item is in the same parent, the target index is after the source index and we're not cloning
-              if (this.isSameParent() && this.source.index() < index && !this.sourceInfo.sortableScope.cloning) {
-                index = index - 1;
-              }
-              this.index = index;
-            },
-            isSameParent: function () {
-              return this.parent.element === this.sourceInfo.sortableScope.element;
-            },
-            isOrderChanged: function () {
-              return this.index !== this.sourceInfo.index;
-            },
-            eventArgs: function () {
-              return {
-                source: this.sourceInfo,
-                dest: {
-                  index: this.index,
-                  sortableScope: this.parent
-                }
-              };
-            },
-            apply: function () {
-              if (!this.sourceInfo.sortableScope.cloning) {
-                // if not cloning, remove the item from the source model.
-                this.sourceInfo.sortableScope.removeItem(this.sourceInfo.index);
-
-                // if the dragged item is not already there, insert the item. This avoids ng-repeat dupes error
-                if (this.parent.options.allowDuplicates || this.parent.modelValue.indexOf(this.source.modelValue) < 0) {
-                  this.parent.insertItem(this.index, this.source.modelValue);
-                }
-              } else if (!this.parent.options.clone) { // prevent drop inside sortables that specify options.clone = true
-                // clone the model value as well
-                this.parent.insertItem(this.index, angular.copy(this.source.modelValue));
-              }
-            }
-          };
-        },
-        */
         dragItems: function(items){
           return {
             index: null,
@@ -294,6 +223,28 @@
             sources: items,
             isSameParent: function(source){
               return this.parent.element === source.sortableScope.element;
+            },
+            allSameParent: function(){
+              var allSame = true;
+              for(var i = 0; i < this.sources.length; i++) {
+                var source = this.sources[i];
+                if(!this.isSameParent(source)) {
+                  allSame = false;
+                  break;
+                }
+              }
+              return allSame;
+            },
+            isOrderChanged: function () {
+              var allSame = true;
+              for(var i = 0; i < this.sources.length; i++) {
+                var source = this.sources[i];
+                if(this.index !== source.index()) {
+                  allSame = false;
+                  break;
+                }
+              }
+              return !allSame;
             },
             moveTo: function(parent, index){
               this.parent = parent;
@@ -332,6 +283,29 @@
                 }
               }
 
+            },
+            eventArgs: function(){
+              var self = this;
+              var sourcesInfo = [];
+              
+              for(var i = 0; i < this.sources.length; i++){
+                var source = this.sources[i];
+                sourcesInfo.push({
+                  scope: source,
+                  index: source.index(),
+                  parentScope: source.sortableScope
+                });
+              }
+
+              var dest = {
+                scope: self.parent,
+                index: self.index
+              };
+
+              return {
+                sourcesInfo: sourcesInfo,
+                dest: dest
+              };
             }
           };
         },

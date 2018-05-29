@@ -12,12 +12,14 @@ angular.module('demoApp', [
         {name: "row1-item2"},
         {name: "row1-item3"},
         {name: "row1-item4"},
+        /*
         {name: "row1-item5"},
         {name: "row1-item6"},
         {name: "row1-item7"},
         {name: "row1-item8"},
         {name: "row1-item9"},
         {name: "row1-item10"}
+        */
       ]
     },
     {
@@ -53,6 +55,27 @@ angular.module('demoApp', [
     }
   ];
 
-  $scope.sortableOptions = {};
+  $scope.sortableOptions = {
+    dragStart: function(){
+      console.log("dragStart");
+    },
+    dragMove: function(){
+      console.log("dragMove");
+    },
+    dragEnd: function(){
+      console.log("dragEnd");
+    },
+    dragCancel: function(){
+      console.log("dragCancel");
+    },
+    itemMoved: function(eventArgs){
+      console.log("item moved");
+      console.log(eventArgs);
+    },
+    orderChanged: function(eventArgs){
+      console.log("order changed");
+      console.log(eventArgs);
+    }
+  };
 }]);
 
