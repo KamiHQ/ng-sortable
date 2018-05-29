@@ -9,8 +9,8 @@
   /**
    * Helper factory for sortable.
    */
-  mainModule.factory('$helper', ['$document', '$window',
-    function ($document, $window) {
+  mainModule.factory('$helper', ['$document', '$window', '$timeout',
+    function ($document, $window, $timeout) {
       return {
 
         /**
@@ -407,7 +407,22 @@
           }
 
           return this.isParent(possibleParent, elem.parentNode);
-        }
+        },
+
+        debounceCall: (function(){
+          // Closure to store timeouts
+          var timeouts = {};
+
+          return function(signature, func, params, timeout) { // Callbacks are always called with last params passed in
+            if(timeouts[signature]){
+              $timeout.cancel(timeouts[signature]);
+            }
+            var promise = $timeout(function(){
+              func.call({},params);
+            }, timeout);
+            timeouts[signature] = promise;
+          };
+        })()
 
       };
     }

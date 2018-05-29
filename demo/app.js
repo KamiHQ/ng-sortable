@@ -2,7 +2,7 @@
 angular.module('demoApp', [
   'as.sortable'
 ])
-.controller('DemoController', ['$scope', function ($scope) {
+.controller('DemoController', ['$scope', 'SortableEventBus', function ($scope, SortableEventBus) {
 
   $scope.rows = [
     {
@@ -53,6 +53,8 @@ angular.module('demoApp', [
     }
   ];
 
+  var eventBus = new SortableEventBus(["deselectAll", "deselect", "getSelected"]);
+
   $scope.sortableOptions = {
     dragStart: function(){
       //console.log("dragStart");
@@ -66,6 +68,9 @@ angular.module('demoApp', [
     dragCancel: function(){
       //console.log("dragCancel");
     },
+    selectionChanged: function(){
+      console.log("selection changed");
+    },
     itemMoved: function(eventArgs){
       console.log("item moved");
       console.log(eventArgs);
@@ -73,7 +78,18 @@ angular.module('demoApp', [
     orderChanged: function(eventArgs){
       console.log("order changed");
       console.log(eventArgs);
-    }
+    },
+    eventBus: eventBus
   };
+
+  // Deleting selected
+  window.addEventListener("keydown", function(e){
+    if(e.keyCode === 46) {
+      console.log("delete fired");
+      eventBus.fire("deselectAll", []);
+    }
+  });
+
+
 }]);
 

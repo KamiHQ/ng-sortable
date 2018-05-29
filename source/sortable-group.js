@@ -100,9 +100,29 @@
           callbacks.selectionChanged = function (event) {
           };
 
+          var initiatedEventBus = false;
+          function initiateEventBus(eventBus){
+            eventBus.on("deselectAll", function(){
+              scope.removeAllFromSelected();
+            });
+
+            eventBus.on("deselect", function(index){
+              return;
+            });
+
+            eventBus.on("getSelected", function(){
+              return scope.selected;
+            });
+          }
+
           scope.$watch(attrs.asSortableGroup, function (newVal, oldVal) {
             angular.forEach(newVal, function (value, key) {
-              if (callbacks[key]) {
+              if(key === "eventBus") {
+                if(value !== null && !initiatedEventBus) {
+                  initiateEventBus(value);
+                  initiatedEventBus = true;
+                }
+              } else if (callbacks[key]) {
                 if (typeof value === 'function') {
                   callbacks[key] = value;
                 }
@@ -137,6 +157,7 @@
         $helper.orderSelected($scope.selected);
       }
       itemScope.select();
+      $helper.debounceCall("selectionChanged", $scope.callbacks.selectionChanged, [$scope.selected], 1000); // Wait 1 second for user selection to finish
     };
 
     $scope.removeFromSelected = function(itemScope) {
@@ -145,6 +166,7 @@
         $scope.selected.splice(idx, 1);
       }
       itemScope.unselected();
+      $helper.debounceCall("selectionChanged", $scope.callbacks.selectionChanged, [$scope.selected], 1000);
     };
 
     $scope.removeAllFromSelected = function(){
