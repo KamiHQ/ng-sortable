@@ -63,7 +63,7 @@
 
     // Recreate when reloads
     $timeout(function(){
-      if($scope.sortableScope.groupScope.isSelected($scope, $scope.modelValue.$$hashKey)) {
+      if($helper.isSelected($scope.sortableScope.groupScope.selected, $scope, $scope.modelValue.$$hashKey)) {
         $scope.select();
       }
     }, 0);

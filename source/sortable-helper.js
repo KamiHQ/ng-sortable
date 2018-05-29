@@ -338,7 +338,77 @@
           while ((el = el.parentElement) && !matches.call(el, selector)) {
           }
           return el ? angular.element(el) : angular.element(document.body);
+        },
+
+        /**
+         * Fetch scope from element or parents
+         * @param  {object} element Source element
+         * @return {object}         Scope, or null if not found
+         */
+        fetchScope: function (element) {
+          var scope;
+          while (!scope && element.length) {
+            scope = element.data('_scope');
+            if (!scope) {
+              element = element.parent();
+            }
+          }
+          return scope;
+        },
+
+        orderSelected: function(selected){
+          selected.sort(function(selectedA, selectedB){
+            var a = selectedA.overAllIndex();
+            var b = selectedB.overAllIndex();
+            if(a.row > b.row){
+              return 1;
+            } else if(a.row < b.row){
+              return -1;
+            } else {
+              return a.column >= b.column ? 1 : -1;
+            }
+          });
+        },
+
+        isSelected: function(selected, itemScope, hashKey){
+          var index = selected.indexOf(itemScope);
+          if(index === -1) {
+            if (hashKey === undefined) {
+              return false;
+            } else {
+              for(var i = 0; i < selected.length; i++){
+                if(selected[i].modelValue.$$hashKey === hashKey){
+                  index = i;
+                  // Swap out the itemScope to new one
+                  selected[index] = itemScope;
+                  this.orderSelected(selected);
+                  break;
+                }
+              }
+              return index !== -1;
+            }
+          } else {
+            return true;
+          }
+        },
+
+        isCloning: function(selected, shift) {
+          selected.sortableScope.cloning = selected.sortableScope.options.clone || (selected.sortableScope.options.ctrlClone && shift);
+          return selected.sortableScope.cloning;
+        },
+        //Check if a node is parent to another node
+        isParent: function(possibleParent, elem) {
+          if(!elem || elem.nodeName === 'HTML') {
+            return false;
+          }
+
+          if(elem.parentNode === possibleParent) {
+            return true;
+          }
+
+          return this.isParent(possibleParent, elem.parentNode);
         }
+
       };
     }
   ]);
