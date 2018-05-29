@@ -10,21 +10,21 @@
    * Helper factory for sortable.
    */
   mainModule.factory('SortableEventBus', ['$document', '$window', function($document, $window){
-  	class SortableEventBus {
-  		constructor(events) {
-  			this.eventBus = {};
-  			for(var i = 0; i < events.length; i++) {
-  				let eventName = events[i];
-  				this.eventBus[eventName] = [];
-  			}
-  		}
+  	// Really want to use es6 class but can't be fucked compiling using babel so use prototypes instead
+  	function SortableEventBus(events){
+  		this.eventBus = {};
+		for(var i = 0; i < events.length; i++) {
+			let eventName = events[i];
+			this.eventBus[eventName] = [];
+		}
+  	}
 
-  		on(eventName, callback) {
+  	SortableEventBus.prototype = {
+  		on: function(eventName, callback) {
   			this.eventBus[eventName] = this.eventBus[eventName] || [];
   			this.eventBus[eventName].push(callback);
-  		}
-
-  		fire(eventName, args) {
+  		},
+  		fire: function(eventName, args) {
   			var callbacks = this.eventBus[eventName];
   			if(!callbacks || callbacks.length < 1){
   				return;
@@ -36,7 +36,7 @@
   			}
   			return results;
   		}
-  	}
+  	};
 
   	return SortableEventBus;
   }]);

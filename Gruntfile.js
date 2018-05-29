@@ -104,9 +104,12 @@ module.exports = function (grunt) {
         src: [
           '<%= cfg.srcDir %>/sortable-main.js',
           '<%= cfg.srcDir %>/sortable-helper.js',
+          '<%= cfg.srcDir %>/sortable-event-bus',
+          '<%= cfg.srcDir %>/sortable-group.js'
           '<%= cfg.srcDir %>/sortable.js',
           '<%= cfg.srcDir %>/sortable-item-handle.js',
-          '<%= cfg.srcDir %>/sortable-item.js'
+          '<%= cfg.srcDir %>/sortable-item.js',
+          '<%= cfg.srcDir %>/sortable-item-selectable.js'
         ],
         dest: '<%= cfg.buildDir %>/ng-sortable.js'
       }
