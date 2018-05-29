@@ -222,6 +222,9 @@
             parent: null,
             sources: items,
             isSameParent: function(source){
+              if(!this.parent) {
+                return true;
+              }
               return this.parent.element === source.sortableScope.element;
             },
             allSameParent: function(){
@@ -237,6 +240,9 @@
             },
             isOrderChanged: function () {
               var allSame = true;
+              if(!this.index) {
+                return false;
+              }
               for(var i = 0; i < this.sources.length; i++) {
                 var source = this.sources[i];
                 if(this.index !== source.index()) {
@@ -328,7 +334,6 @@
          * @private
          */
         findAncestor: function (el, selector) {
-          el = el[0];
           var matches = Element.matches || Element.prototype.mozMatchesSelector || Element.prototype.msMatchesSelector || Element.prototype.oMatchesSelector || Element.prototype.webkitMatchesSelector;
           while ((el = el.parentElement) && !matches.call(el, selector)) {
           }

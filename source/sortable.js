@@ -200,18 +200,13 @@
     var dragState = {
       containment: null,
       dragElementsContainer: null,
-      dragItemsInfo: null
+      dragItemsInfo: null,
+      itemPosition: null
     };
 
     function isCloning(selected, shift) {
       selected.sortableScope.cloning = selected.sortableScope.options.clone || (selected.sortableScope.options.ctrlClone && shift);
       return selected.sortableScope.cloning;
-    }
-
-    function positionDragElementsContainer(event){
-      dragState.dragElementsContainer.css({position: 'absolute'});
-      dragState.dragElementsContainer.css({top: event.clientY + 'px'});
-      dragState.dragElementsContainer.css({left: event.clientX + 'px'});
     }
 
     /**
@@ -288,6 +283,7 @@
     }
 
     $scope.dragging = false;
+    var scrollableContainer = $document[0].documentElement;
 
     $scope.dragStart = function(event){
       var eventObj = $helper.eventObj(event);
@@ -299,6 +295,10 @@
       dragState.dragElementsContainer = angular.element("<div>").addClass(sortableConfig.dragClass);
       dragState.containment = angular.element($document[0].body);
       dragState.dragItemsInfo = $helper.dragItems($scope.selected);
+
+      var itemElement = $helper.findAncestor(event.srcElement, '.as-sortable-item');
+      dragState.itemPosition = $helper.positionStarted(eventObj, itemElement, scrollableContainer);
+
       for(var i = 0; i < $scope.selected.length; i++) {
         var selected = $scope.selected[i];
         var cloning = isCloning(selected, event.ctrlKey);
@@ -308,7 +308,8 @@
         dragState.dragElementsContainer.append(dragElement);
       }
       dragState.containment.append(dragState.dragElementsContainer);
-      positionDragElementsContainer(event);
+
+      $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
       $scope.$apply(function(){
         $scope.callbacks.dragStart(eventObj);
       });
@@ -317,7 +318,6 @@
 
     $scope.dragMove = function(event){
       var eventObj = $helper.eventObj(event);
-      positionDragElementsContainer(event);
       var targetX = event.pageX - $document[0].documentElement.scrollLeft;
       var targetY = event.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
       var targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
@@ -325,6 +325,8 @@
       if (!targetScope || !targetScope.type) {
         return;
       }
+
+      $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
 
       if(targetScope.type === 'item') {
         // decide where to insert placeholder based on target element and current placeholder if is present
@@ -396,6 +398,7 @@
           $scope.callbacks.dragEnd(eventObj);
         }
         dragState.dragItemsInfo = null;
+        dragState.itemPosition = null;
       });
     };
     
