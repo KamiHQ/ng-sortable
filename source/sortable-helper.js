@@ -309,17 +309,18 @@
               this.index = index;
             },
             apply: function(){
+              var i, source;
               // Remove existing
-              for(var i = 0; i < this.sources.length; i++) {
-                var source = this.sources[i];
+              for(i = 0; i < this.sources.length; i++) {
+                source = this.sources[i];
                 if(!source.sortableScope.cloning){
                   // if not cloning, remove the item from the source model.
                   source.sortableScope.removeItem(source.modelValue);
                 }
               }
               // Insert new
-              for(var i = 0; i < this.sources.length; i++) {
-                var source = this.sources[i];
+              for(i = 0; i < this.sources.length; i++) {
+                source = this.sources[i];
                 var parent = this.parent ? this.parent : source.sortableScope;
                 var index = this.index === null ? source.index() : this.index + i;
                 if(!source.sortableScope.cloning){

@@ -248,6 +248,49 @@
           this.calculatePosition(pos, event);
         },
 
+        allSameParents: function(sources) {
+          var allSame = true;
+          var currentParentElement = sources[0].sortableScope.element;
+          for(var i = 1; i < sources.length; i++) {
+            if(sources[i].sortableScope.element !== currentParentElement) {
+              allSame = false;
+              break;
+            }
+          }
+          return allSame;
+        },
+
+        getBetweenScopes: function(parentElement, querySelector, start, end){ // Starts from 0
+          var childElements = Array.prototype.slice.call(parentElement.querySelectorAll(querySelector));
+          var betweenElements = childElements.slice(start, end + 1);
+          var childScopes = [];
+          for(var i = 0; i < betweenElements.length; i++){
+            var betweenElement = angular.element(betweenElements[i]);
+            var fetchScope = this.fetchScope(betweenElement);
+            childScopes.push(fetchScope);
+          }
+          return childScopes;
+        },
+
+        findMaxMinIndex: function(itemScopes){
+          var returnObject = {
+            max: itemScopes[0].index(),
+            min: itemScopes[0].index()
+          };
+
+          for(var i = 1; i < itemScopes.length; i++) {
+            var index = itemScopes[i].index();
+            if(returnObject.max < index) {
+              returnObject.max = index;
+            }
+
+            if(returnObject.min > index) {
+              returnObject.min = index;
+            }
+          }
+
+          return returnObject;
+        },
         /**
          * The drag item info and functions.
          * retains the item info before and after move.
@@ -308,17 +351,18 @@
               this.index = index;
             },
             apply: function(){
+              var i, source;
               // Remove existing
-              for(var i = 0; i < this.sources.length; i++) {
-                var source = this.sources[i];
+              for(i = 0; i < this.sources.length; i++) {
+                source = this.sources[i];
                 if(!source.sortableScope.cloning){
                   // if not cloning, remove the item from the source model.
                   source.sortableScope.removeItem(source.modelValue);
                 }
               }
               // Insert new
-              for(var i = 0; i < this.sources.length; i++) {
-                var source = this.sources[i];
+              for(i = 0; i < this.sources.length; i++) {
+                source = this.sources[i];
                 var parent = this.parent ? this.parent : source.sortableScope;
                 var index = this.index === null ? source.index() : this.index + i;
                 if(!source.sortableScope.cloning){
@@ -483,39 +527,39 @@
   /**
    * Helper factory for sortable.
    */
-  mainModule.factory('SortableEventBus', ['$document', '$window', function($document, $window){
-  	// Really want to use es6 class but can't be fucked compiling using babel so use prototypes instead
-  	function SortableEventBus(events){
-  		this.eventBus = {};
-		for(var i = 0; i < events.length; i++) {
-			let eventName = events[i];
-			this.eventBus[eventName] = [];
-		}
-  	}
+  mainModule.factory('SortableEventBus', [ function(){
+    // Really want to use es6 class but can't be fucked compiling using babel so use prototypes instead
+    function SortableEventBus(events){
+      this.eventBus = {};
+      for(var i = 0; i < events.length; i++) {
+        var eventName = events[i];
+        this.eventBus[eventName] = [];
+      }
+    }
 
-  	SortableEventBus.prototype = {
-  		on: function(eventName, callback) {
-  			this.eventBus[eventName] = this.eventBus[eventName] || [];
-  			this.eventBus[eventName].push(callback);
-  		},
-  		fire: function(eventName, args) {
-  			var callbacks = this.eventBus[eventName];
-  			if(!callbacks || callbacks.length < 1){
-  				return;
-  			}
-  			var results = [];
-  			for(var i = 0; i < callbacks.length; i++){
-  				let result = callbacks[i].apply({}, args);
-  				results.push(result);
-  			}
-  			return results;
-  		}
-  	};
+    SortableEventBus.prototype = {
+      on: function(eventName, callback) {
+        this.eventBus[eventName] = this.eventBus[eventName] || [];
+        this.eventBus[eventName].push(callback);
+      },
+      fire: function(eventName, args) {
+        var callbacks = this.eventBus[eventName];
+        if(!callbacks || callbacks.length < 1){
+          return;
+        }
+        var results = [];
+        for(var i = 0; i < callbacks.length; i++){
+          var result = callbacks[i].apply({}, args);
+          results.push(result);
+        }
+        return results;
+      }
+    };
 
-  	return SortableEventBus;
+    return SortableEventBus;
   }]);
 
- })();
+})();
 /*jshint undef: false, unused: false, indent: 2*/
 /*global angular: false */
 
@@ -539,7 +583,7 @@
           var callbacks;
 
           var pointerUpCallback = function(e) {
-            if (e.ctrlKey || e.metaKey || scope.dragging) {
+            if (e.ctrlKey || e.metaKey || e.shiftKey || scope.dragging) {
               return;
             } else {
               scope.$apply(function(){
@@ -620,22 +664,22 @@
 
           var initiatedEventBus = false;
           function initiateEventBus(eventBus){
-            eventBus.on("deselectAll", function(){
+            eventBus.on('deselectAll', function(){
               scope.removeAllFromSelected();
             });
 
-            eventBus.on("deselect", function(index){
+            eventBus.on('deselect', function(index){
               return;
             });
 
-            eventBus.on("getSelected", function(){
+            eventBus.on('getSelected', function(){
               return scope.selected;
             });
           }
 
           scope.$watch(attrs.asSortableGroup, function (newVal, oldVal) {
             angular.forEach(newVal, function (value, key) {
-              if(key === "eventBus") {
+              if(key === 'eventBus') {
                 if(value !== null && !initiatedEventBus) {
                   initiateEventBus(value);
                   initiatedEventBus = true;
@@ -675,7 +719,7 @@
         $helper.orderSelected($scope.selected);
       }
       itemScope.select();
-      $helper.debounceCall("selectionChanged", $scope.callbacks.selectionChanged, [$scope.selected], 1000); // Wait 1 second for user selection to finish
+      $helper.debounceCall('selectionChanged', $scope.callbacks.selectionChanged, [$scope.selected], 1000); // Wait 1 second for user selection to finish
     };
 
     $scope.removeFromSelected = function(itemScope) {
@@ -684,12 +728,29 @@
         $scope.selected.splice(idx, 1);
       }
       itemScope.unselected();
-      $helper.debounceCall("selectionChanged", $scope.callbacks.selectionChanged, [$scope.selected], 1000);
+      $helper.debounceCall('selectionChanged', $scope.callbacks.selectionChanged, [$scope.selected], 1000);
     };
 
     $scope.removeAllFromSelected = function(){
       while ($scope.selected.length > 0) {
         $scope.removeFromSelected($scope.selected[0]);
+      }
+    };
+
+    $scope.expandToSelected = function(itemScope){
+      if($scope.selected.length === 0) {
+        $scope.addToSelected(itemScope);
+      } else if ($helper.isSelected($scope.selected, itemScope)) {
+        // Already selected do nothing
+        return;
+      } else if($helper.allSameParents($scope.selected.concat(itemScope))) {
+        // Same parents expand to selected
+        var sortableElement = itemScope.sortableScope.element[0];
+        var maxMinIndexes = $helper.findMaxMinIndex($scope.selected.concat(itemScope));
+        var scopes = $helper.getBetweenScopes(sortableElement, '.' + sortableConfig.itemClass, maxMinIndexes.min, maxMinIndexes.max);
+        for (var i = 0; i < scopes.length; i++) {
+          $scope.addToSelected(scopes[i]);
+        }
       }
     };
 
@@ -723,7 +784,7 @@
         }
       }
       return -1;
-    };
+    }
 
     /**
      * Check there is no place holder placed by itemScope.
@@ -732,7 +793,7 @@
      */
     function isPlaceHolderPresent (targetElement) {
       return placeHolderIndex(targetElement) >= 0;
-    };
+    }
 
     function addDragClasses() {
       dragState.containment.css('cursor', 'move');
@@ -756,11 +817,11 @@
       } else {
         $scope.dragging = true;
       }
-      dragState.dragElementsContainer = angular.element("<div>").addClass(sortableConfig.dragClass);
+      dragState.dragElementsContainer = angular.element('<div>').addClass(sortableConfig.dragClass);
       dragState.containment = angular.element($document[0].body);
       dragState.dragItemsInfo = $helper.dragItems($scope.selected);
 
-      var itemElement = $helper.findAncestor(event.target, '.as-sortable-item');
+      var itemElement = $helper.findAncestor(event.target, '.' + sortableConfig.itemClass);
       dragState.itemPosition = $helper.positionStarted(eventObj, itemElement, scrollableContainer);
 
       for(var i = 0; i < $scope.selected.length; i++) {
@@ -786,18 +847,19 @@
       var targetY = event.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
       var targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
       var targetScope = $helper.fetchScope(targetElement);
+      var i, selected;
       if (!targetScope || !targetScope.type) {
         return;
       }
 
       $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
 
-      if(targetScope.type === 'handle') {
+      if(targetScope.type === 'item') {
         // decide where to insert placeholder based on target element and current placeholder if is present
         targetElement = targetScope.element;
         var placeholderIndex = placeHolderIndex(targetScope.sortableScope.element);
-        for(var i = 0; i < $scope.selected.length; i++) {
-          var selected = $scope.selected[i];
+        for(i = 0; i < $scope.selected.length; i++) {
+          selected = $scope.selected[i];
           if (placeholderIndex < 0) {
             selected.insertBefore(targetElement, targetScope, dragState.dragItemsInfo);
           } else {
@@ -812,8 +874,8 @@
         if (!$helper.isParent(targetScope.element[0], targetElement[0])) {
           //moving over sortable bucket. not over item.
           if (!isPlaceHolderPresent(targetElement) && !targetScope.options.clone) {
-            for(var i = 0; i < $scope.selected.length; i++) {
-              var selected = $scope.selected[i];
+            for(i = 0; i < $scope.selected.length; i++) {
+              selected = $scope.selected[i];
               selected.appendPlaceHolder(targetElement);
               dragState.dragItemsInfo.moveTo(targetScope, targetScope.modelValue.length);
             }
@@ -953,7 +1015,6 @@
           };
           //set the element in scope to be accessed by its sub scope.
           scope.element = element;
-          scope.rowIndex;
           element.data('_scope',scope); // #144, work with angular debugInfoEnabled(false)
 
           //Set the sortOptions else set it to default.
@@ -1015,28 +1076,25 @@
         controller: 'as.sortable.sortableItemHandleController',
         link: function (scope, element, attrs, itemController) {
 
-            var dragListen,// drag listen event.
-            dragStart,// drag start event.
-            dragMove,//drag move event.
-            dragEnd,//drag end event.
-            dragCancel,//drag cancel event.
-            isDraggable,//is element draggable.
-            bindDrag,//bind drag events.
-            unbindDrag,//unbind drag events.
-            bindEvents,//bind the drag events.
-            unBindEvents,//unbind the drag events.
-            hasTouch,// has touch support.
-            isIOS,// is iOS device.
-            longTouchStart, // long touch start event
-            longTouchCancel, // cancel long touch
-            longTouchTimer, // timer promise for the long touch on iOS devices
-            dragHandled, //drag handled.
-            createPlaceholder,//create place holder.
-            isPlaceHolderPresent,//is placeholder present.
-            isDisabled = false, // drag enabled
-            escapeListen, // escape listen event
-            isLongTouch = false; //long touch disabled.
-
+          var dragListen,// drag listen event.
+          dragStart,// drag start event.
+          dragMove,//drag move event.
+          dragEnd,//drag end event.
+          dragCancel,//drag cancel event.
+          isDraggable,//is element draggable.
+          bindDrag,//bind drag events.
+          unbindDrag,//unbind drag events.
+          bindEvents,//bind the drag events.
+          unBindEvents,//unbind the drag events.
+          hasTouch,// has touch support.
+          isIOS,// is iOS device.
+          longTouchStart, // long touch start event
+          longTouchCancel, // cancel long touch
+          longTouchTimer, // timer promise for the long touch on iOS devices
+          dragHandled, //drag handled.
+          isDisabled = false, // drag enabled
+          escapeListen, // escape listen event
+          isLongTouch = false; //long touch disabled.
           hasTouch = 'ontouchstart' in $window;
           isIOS = /iPad|iPhone|iPod/.test($window.navigator.userAgent) && !$window.MSStream;
 
@@ -1068,16 +1126,6 @@
           scope.$on('$destroy', function () {
             angular.element($document[0].body).unbind('keydown', escapeListen);
           });
-
-          createPlaceholder = function (itemScope) {
-            if (typeof scope.sortableScope.options.placeholder === 'function') {
-              return angular.element(scope.sortableScope.options.placeholder(itemScope));
-            } else if (typeof scope.sortableScope.options.placeholder === 'string') {
-              return angular.element(scope.sortableScope.options.placeholder);
-            } else {
-              return angular.element($document[0].createElement(itemScope.element.prop('tagName')));
-            }
-          };
 
           /**
            * Listens for a 10px movement before
@@ -1124,8 +1172,6 @@
            */
           dragStart = function (event) {
 
-            var eventObj, tagName;
-
             if (!hasTouch && (event.button === 2 || event.which === 3)) {
               // disable right click
               return;
@@ -1158,7 +1204,7 @@
             elementClicked = angular.element(event.target);
 
             // look for the handle on the current scope or parent scopes
-            sourceScope = fetchScope(elementClicked);
+            sourceScope = $helper.fetchScope(elementClicked);
 
             isDraggable = (sourceScope && sourceScope.type === 'handle');
 
@@ -1173,30 +1219,11 @@
           };
 
           /**
-           * Fetch scope from element or parents
-           * @param  {object} element Source element
-           * @return {object}         Scope, or null if not found
-           */
-          function fetchScope(element) {
-            var scope;
-            while (!scope && element.length) {
-              scope = element.data('_scope');
-              if (!scope) {
-                element = element.parent();
-              }
-            }
-            return scope;
-          }
-
-
-          /**
            * Triggered when drag is moving.
            *
            * @param event - the event object.
            */
           dragMove = function (event) {
-
-            var eventObj, targetX, targetY, targetScope, targetElement;
 
             if (hasTouch && $helper.isTouchInvalid(event)) {
               return;
@@ -1209,22 +1236,6 @@
             event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragMove(event);
           };
-
-          /**
-           * Rollback the drag data changes.
-           */
-
-          function rollbackDragChanges() {
-            if (!scope.itemScope.sortableScope.cloning) {
-              placeElement.replaceWith(scope.itemScope.element);
-            }
-            placeHolder.remove();
-            dragElement.remove();
-            dragElement = null;
-            dragHandled = false;
-            containment.css('cursor', '');
-            containment.removeClass('as-sortable-un-selectable');
-          }
 
           /**
            * triggered while drag ends.
@@ -1386,7 +1397,7 @@
       return {
         row: $scope.sortableScope.rowIndex,
         column: $scope.$index
-      }
+      };
     };
 
     /**
@@ -1428,7 +1439,7 @@
         return $scope.element.clone();
       } else {
         return $scope.element;
-      } 
+      }
     };
 
     $scope.createPlaceholder = function(append){
@@ -1467,7 +1478,6 @@
      * @param targetScope the target scope
      */
     $scope.insertBefore = function(targetElement, targetScope, dragItemsInfo) {
-      console.log("insert before");
       // Ensure the placeholder is visible in the target (unless it's a table row)
       if (placeHolder.css('display') !== 'table-row') {
         placeHolder.css('display', 'block');
@@ -1476,7 +1486,7 @@
         targetElement[0].parentNode.insertBefore(placeHolder[0], targetElement[0]);
         dragItemsInfo.moveTo(targetScope.sortableScope, targetScope.index());
       }
-    }
+    };
 
     /**
      * Inserts the placeHolder next to the targetScope.
@@ -1493,18 +1503,18 @@
         targetElement.after(placeHolder);
         dragItemsInfo.moveTo(targetScope.sortableScope, targetScope.index() + 1);
       }
-    }
+    };
 
     $scope.appendPlaceHolder = function(targetElement){
       targetElement[0].appendChild(placeHolder[0]);
-    }
+    };
 
     $scope.rollbackDragChanges = function(){
       if (!$scope.sortableScope.cloning) {
         placeElement.replaceWith($scope.element);
       }
       placeHolder.remove();
-    }
+    };
 
   }]);
 
@@ -1569,7 +1579,7 @@
           startPosition.initiated = true;
           startPosition.clientX = e.clientX;
           startPosition.clientY = e.clientY;
-          if (e.ctrlKey || e.metaKey) {
+          if (e.ctrlKey || e.metaKey || e.shiftKey) {
             return;
           } else {
             if (!$helper.isSelected(groupScope.selected, scope.itemScope)) {
@@ -1592,7 +1602,11 @@
           ) {
             // Is a click
             scope.$apply(function(){
-              groupScope.addToSelected(scope.itemScope);
+              if(e.shiftKey) {
+                groupScope.expandToSelected(scope.itemScope);
+              } else {
+                groupScope.addToSelected(scope.itemScope);
+              }
             });
           }
           startPosition.initiated = false;

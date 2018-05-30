@@ -82,7 +82,6 @@
           };
           //set the element in scope to be accessed by its sub scope.
           scope.element = element;
-          scope.rowIndex;
           element.data('_scope',scope); // #144, work with angular debugInfoEnabled(false)
 
           //Set the sortOptions else set it to default.

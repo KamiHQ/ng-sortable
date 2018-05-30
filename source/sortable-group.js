@@ -102,22 +102,22 @@
 
           var initiatedEventBus = false;
           function initiateEventBus(eventBus){
-            eventBus.on("deselectAll", function(){
+            eventBus.on('deselectAll', function(){
               scope.removeAllFromSelected();
             });
 
-            eventBus.on("deselect", function(index){
+            eventBus.on('deselect', function(index){
               return;
             });
 
-            eventBus.on("getSelected", function(){
+            eventBus.on('getSelected', function(){
               return scope.selected;
             });
           }
 
           scope.$watch(attrs.asSortableGroup, function (newVal, oldVal) {
             angular.forEach(newVal, function (value, key) {
-              if(key === "eventBus") {
+              if(key === 'eventBus') {
                 if(value !== null && !initiatedEventBus) {
                   initiateEventBus(value);
                   initiatedEventBus = true;
@@ -157,7 +157,7 @@
         $helper.orderSelected($scope.selected);
       }
       itemScope.select();
-      $helper.debounceCall("selectionChanged", $scope.callbacks.selectionChanged, [$scope.selected], 1000); // Wait 1 second for user selection to finish
+      $helper.debounceCall('selectionChanged', $scope.callbacks.selectionChanged, [$scope.selected], 1000); // Wait 1 second for user selection to finish
     };
 
     $scope.removeFromSelected = function(itemScope) {
@@ -166,7 +166,7 @@
         $scope.selected.splice(idx, 1);
       }
       itemScope.unselected();
-      $helper.debounceCall("selectionChanged", $scope.callbacks.selectionChanged, [$scope.selected], 1000);
+      $helper.debounceCall('selectionChanged', $scope.callbacks.selectionChanged, [$scope.selected], 1000);
     };
 
     $scope.removeAllFromSelected = function(){
@@ -180,12 +180,12 @@
         $scope.addToSelected(itemScope);
       } else if ($helper.isSelected($scope.selected, itemScope)) {
         // Already selected do nothing
-        null
+        return;
       } else if($helper.allSameParents($scope.selected.concat(itemScope))) {
         // Same parents expand to selected
         var sortableElement = itemScope.sortableScope.element[0];
         var maxMinIndexes = $helper.findMaxMinIndex($scope.selected.concat(itemScope));
-        var scopes = $helper.getBetweenScopes(sortableElement, "." + sortableConfig.itemClass, maxMinIndexes.min, maxMinIndexes.max);
+        var scopes = $helper.getBetweenScopes(sortableElement, '.' + sortableConfig.itemClass, maxMinIndexes.min, maxMinIndexes.max);
         for (var i = 0; i < scopes.length; i++) {
           $scope.addToSelected(scopes[i]);
         }
@@ -222,7 +222,7 @@
         }
       }
       return -1;
-    };
+    }
 
     /**
      * Check there is no place holder placed by itemScope.
@@ -231,7 +231,7 @@
      */
     function isPlaceHolderPresent (targetElement) {
       return placeHolderIndex(targetElement) >= 0;
-    };
+    }
 
     function addDragClasses() {
       dragState.containment.css('cursor', 'move');
@@ -255,7 +255,7 @@
       } else {
         $scope.dragging = true;
       }
-      dragState.dragElementsContainer = angular.element("<div>").addClass(sortableConfig.dragClass);
+      dragState.dragElementsContainer = angular.element('<div>').addClass(sortableConfig.dragClass);
       dragState.containment = angular.element($document[0].body);
       dragState.dragItemsInfo = $helper.dragItems($scope.selected);
 
@@ -285,6 +285,7 @@
       var targetY = event.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
       var targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
       var targetScope = $helper.fetchScope(targetElement);
+      var i, selected;
       if (!targetScope || !targetScope.type) {
         return;
       }
@@ -295,8 +296,8 @@
         // decide where to insert placeholder based on target element and current placeholder if is present
         targetElement = targetScope.element;
         var placeholderIndex = placeHolderIndex(targetScope.sortableScope.element);
-        for(var i = 0; i < $scope.selected.length; i++) {
-          var selected = $scope.selected[i];
+        for(i = 0; i < $scope.selected.length; i++) {
+          selected = $scope.selected[i];
           if (placeholderIndex < 0) {
             selected.insertBefore(targetElement, targetScope, dragState.dragItemsInfo);
           } else {
@@ -311,8 +312,8 @@
         if (!$helper.isParent(targetScope.element[0], targetElement[0])) {
           //moving over sortable bucket. not over item.
           if (!isPlaceHolderPresent(targetElement) && !targetScope.options.clone) {
-            for(var i = 0; i < $scope.selected.length; i++) {
-              var selected = $scope.selected[i];
+            for(i = 0; i < $scope.selected.length; i++) {
+              selected = $scope.selected[i];
               selected.appendPlaceHolder(targetElement);
               dragState.dragItemsInfo.moveTo(targetScope, targetScope.modelValue.length);
             }

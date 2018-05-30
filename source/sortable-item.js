@@ -37,7 +37,7 @@
       return {
         row: $scope.sortableScope.rowIndex,
         column: $scope.$index
-      }
+      };
     };
 
     /**
@@ -79,7 +79,7 @@
         return $scope.element.clone();
       } else {
         return $scope.element;
-      } 
+      }
     };
 
     $scope.createPlaceholder = function(append){
@@ -118,7 +118,6 @@
      * @param targetScope the target scope
      */
     $scope.insertBefore = function(targetElement, targetScope, dragItemsInfo) {
-      console.log("insert before");
       // Ensure the placeholder is visible in the target (unless it's a table row)
       if (placeHolder.css('display') !== 'table-row') {
         placeHolder.css('display', 'block');
@@ -127,7 +126,7 @@
         targetElement[0].parentNode.insertBefore(placeHolder[0], targetElement[0]);
         dragItemsInfo.moveTo(targetScope.sortableScope, targetScope.index());
       }
-    }
+    };
 
     /**
      * Inserts the placeHolder next to the targetScope.
@@ -144,18 +143,18 @@
         targetElement.after(placeHolder);
         dragItemsInfo.moveTo(targetScope.sortableScope, targetScope.index() + 1);
       }
-    }
+    };
 
     $scope.appendPlaceHolder = function(targetElement){
       targetElement[0].appendChild(placeHolder[0]);
-    }
+    };
 
     $scope.rollbackDragChanges = function(){
       if (!$scope.sortableScope.cloning) {
         placeElement.replaceWith($scope.element);
       }
       placeHolder.remove();
-    }
+    };
 
   }]);
 

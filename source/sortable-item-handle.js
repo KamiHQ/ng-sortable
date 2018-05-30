@@ -31,28 +31,25 @@
         controller: 'as.sortable.sortableItemHandleController',
         link: function (scope, element, attrs, itemController) {
 
-            var dragListen,// drag listen event.
-            dragStart,// drag start event.
-            dragMove,//drag move event.
-            dragEnd,//drag end event.
-            dragCancel,//drag cancel event.
-            isDraggable,//is element draggable.
-            bindDrag,//bind drag events.
-            unbindDrag,//unbind drag events.
-            bindEvents,//bind the drag events.
-            unBindEvents,//unbind the drag events.
-            hasTouch,// has touch support.
-            isIOS,// is iOS device.
-            longTouchStart, // long touch start event
-            longTouchCancel, // cancel long touch
-            longTouchTimer, // timer promise for the long touch on iOS devices
-            dragHandled, //drag handled.
-            createPlaceholder,//create place holder.
-            isPlaceHolderPresent,//is placeholder present.
-            isDisabled = false, // drag enabled
-            escapeListen, // escape listen event
-            isLongTouch = false; //long touch disabled.
-
+          var dragListen,// drag listen event.
+          dragStart,// drag start event.
+          dragMove,//drag move event.
+          dragEnd,//drag end event.
+          dragCancel,//drag cancel event.
+          isDraggable,//is element draggable.
+          bindDrag,//bind drag events.
+          unbindDrag,//unbind drag events.
+          bindEvents,//bind the drag events.
+          unBindEvents,//unbind the drag events.
+          hasTouch,// has touch support.
+          isIOS,// is iOS device.
+          longTouchStart, // long touch start event
+          longTouchCancel, // cancel long touch
+          longTouchTimer, // timer promise for the long touch on iOS devices
+          dragHandled, //drag handled.
+          isDisabled = false, // drag enabled
+          escapeListen, // escape listen event
+          isLongTouch = false; //long touch disabled.
           hasTouch = 'ontouchstart' in $window;
           isIOS = /iPad|iPhone|iPod/.test($window.navigator.userAgent) && !$window.MSStream;
 
@@ -84,16 +81,6 @@
           scope.$on('$destroy', function () {
             angular.element($document[0].body).unbind('keydown', escapeListen);
           });
-
-          createPlaceholder = function (itemScope) {
-            if (typeof scope.sortableScope.options.placeholder === 'function') {
-              return angular.element(scope.sortableScope.options.placeholder(itemScope));
-            } else if (typeof scope.sortableScope.options.placeholder === 'string') {
-              return angular.element(scope.sortableScope.options.placeholder);
-            } else {
-              return angular.element($document[0].createElement(itemScope.element.prop('tagName')));
-            }
-          };
 
           /**
            * Listens for a 10px movement before
@@ -139,8 +126,6 @@
            * @param event the event object.
            */
           dragStart = function (event) {
-
-            var eventObj, tagName;
 
             if (!hasTouch && (event.button === 2 || event.which === 3)) {
               // disable right click
@@ -195,8 +180,6 @@
            */
           dragMove = function (event) {
 
-            var eventObj, targetX, targetY, targetScope, targetElement;
-
             if (hasTouch && $helper.isTouchInvalid(event)) {
               return;
             }
@@ -208,22 +191,6 @@
             event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragMove(event);
           };
-
-          /**
-           * Rollback the drag data changes.
-           */
-
-          function rollbackDragChanges() {
-            if (!scope.itemScope.sortableScope.cloning) {
-              placeElement.replaceWith(scope.itemScope.element);
-            }
-            placeHolder.remove();
-            dragElement.remove();
-            dragElement = null;
-            dragHandled = false;
-            containment.css('cursor', '');
-            containment.removeClass('as-sortable-un-selectable');
-          }
 
           /**
            * triggered while drag ends.
