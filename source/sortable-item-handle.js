@@ -174,7 +174,7 @@
             elementClicked = angular.element(event.target);
 
             // look for the handle on the current scope or parent scopes
-            sourceScope = fetchScope(elementClicked);
+            sourceScope = $helper.fetchScope(elementClicked);
 
             isDraggable = (sourceScope && sourceScope.type === 'handle');
 
@@ -187,23 +187,6 @@
             }
             return isDraggable;
           };
-
-          /**
-           * Fetch scope from element or parents
-           * @param  {object} element Source element
-           * @return {object}         Scope, or null if not found
-           */
-          function fetchScope(element) {
-            var scope;
-            while (!scope && element.length) {
-              scope = element.data('_scope');
-              if (!scope) {
-                element = element.parent();
-              }
-            }
-            return scope;
-          }
-
 
           /**
            * Triggered when drag is moving.

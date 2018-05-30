@@ -206,6 +206,49 @@
           this.calculatePosition(pos, event);
         },
 
+        allSameParents: function(sources) {
+          var allSame = true;
+          var currentParentElement = sources[0].sortableScope.element;
+          for(var i = 1; i < sources.length; i++) {
+            if(sources[i].sortableScope.element !== currentParentElement) {
+              allSame = false;
+              break;
+            }
+          }
+          return allSame;
+        },
+
+        getBetweenScopes: function(parentElement, querySelector, start, end){ // Starts from 0
+          var childElements = Array.prototype.slice.call(parentElement.querySelectorAll(querySelector));
+          var betweenElements = childElements.slice(start, end + 1);
+          var childScopes = [];
+          for(var i = 0; i < betweenElements.length; i++){
+            var betweenElement = angular.element(betweenElements[i]);
+            var fetchScope = this.fetchScope(betweenElement);
+            childScopes.push(fetchScope);
+          }
+          return childScopes;
+        },
+
+        findMaxMinIndex: function(itemScopes){
+          var returnObject = {
+            max: itemScopes[0].index(),
+            min: itemScopes[0].index()
+          };
+
+          for(var i = 1; i < itemScopes.length; i++) {
+            var index = itemScopes[i].index();
+            if(returnObject.max < index) {
+              returnObject.max = index;
+            }
+
+            if(returnObject.min > index) {
+              returnObject.min = index;
+            }
+          }
+
+          return returnObject;
+        },
         /**
          * The drag item info and functions.
          * retains the item info before and after move.

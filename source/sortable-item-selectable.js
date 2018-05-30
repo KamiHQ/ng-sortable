@@ -27,7 +27,7 @@
           startPosition.initiated = true;
           startPosition.clientX = e.clientX;
           startPosition.clientY = e.clientY;
-          if (e.ctrlKey || e.metaKey) {
+          if (e.ctrlKey || e.metaKey || e.shiftKey) {
             return;
           } else {
             if (!$helper.isSelected(groupScope.selected, scope.itemScope)) {
@@ -50,7 +50,11 @@
           ) {
             // Is a click
             scope.$apply(function(){
-              groupScope.addToSelected(scope.itemScope);
+              if(e.shiftKey) {
+                groupScope.expandToSelected(scope.itemScope);
+              } else {
+                groupScope.addToSelected(scope.itemScope);
+              }
             });
           }
           startPosition.initiated = false;

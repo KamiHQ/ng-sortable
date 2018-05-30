@@ -21,7 +21,7 @@
           var callbacks;
 
           var pointerUpCallback = function(e) {
-            if (e.ctrlKey || e.metaKey || scope.dragging) {
+            if (e.ctrlKey || e.metaKey || e.shiftKey || scope.dragging) {
               return;
             } else {
               scope.$apply(function(){
@@ -175,6 +175,23 @@
       }
     };
 
+    $scope.expandToSelected = function(itemScope){
+      if($scope.selected.length === 0) {
+        $scope.addToSelected(itemScope);
+      } else if ($helper.isSelected($scope.selected, itemScope)) {
+        // Already selected do nothing
+        null
+      } else if($helper.allSameParents($scope.selected.concat(itemScope))) {
+        // Same parents expand to selected
+        var sortableElement = itemScope.sortableScope.element[0];
+        var maxMinIndexes = $helper.findMaxMinIndex($scope.selected.concat(itemScope));
+        var scopes = $helper.getBetweenScopes(sortableElement, "." + sortableConfig.itemClass, maxMinIndexes.min, maxMinIndexes.max);
+        for (var i = 0; i < scopes.length; i++) {
+          $scope.addToSelected(scopes[i]);
+        }
+      }
+    };
+
     $scope.selected = [];
 
     // Functions associated with moving multiple selected items
@@ -242,7 +259,7 @@
       dragState.containment = angular.element($document[0].body);
       dragState.dragItemsInfo = $helper.dragItems($scope.selected);
 
-      var itemElement = $helper.findAncestor(event.target, '.as-sortable-item');
+      var itemElement = $helper.findAncestor(event.target, '.' + sortableConfig.itemClass);
       dragState.itemPosition = $helper.positionStarted(eventObj, itemElement, scrollableContainer);
 
       for(var i = 0; i < $scope.selected.length; i++) {
