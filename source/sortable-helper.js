@@ -389,10 +389,12 @@
          * @param  {object} element Source element
          * @return {object}         Scope, or null if not found
          */
-        fetchScope: function (element) {
+        fetchScope: function (element, skipClass) {
           var scope;
           while (!scope && element.length) {
-            scope = element.data('_scope');
+            if(!skipClass || !element.hasClass(skipClass)) {
+              scope = element.data('_scope');
+            }
             if (!scope) {
               element = element.parent();
             }

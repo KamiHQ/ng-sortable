@@ -284,7 +284,7 @@
       var targetX = event.pageX - $document[0].documentElement.scrollLeft;
       var targetY = event.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
       var targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
-      var targetScope = $helper.fetchScope(targetElement);
+      var targetScope = $helper.fetchScope(targetElement, sortableConfig.handleClass);
       var i, selected;
       if (!targetScope || !targetScope.type) {
         return;

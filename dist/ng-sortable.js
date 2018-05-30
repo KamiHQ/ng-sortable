@@ -431,10 +431,12 @@
          * @param  {object} element Source element
          * @return {object}         Scope, or null if not found
          */
-        fetchScope: function (element) {
+        fetchScope: function (element, skipClass) {
           var scope;
           while (!scope && element.length) {
-            scope = element.data('_scope');
+            if(!skipClass || !element.hasClass(skipClass)) {
+              scope = element.data('_scope');
+            }
             if (!scope) {
               element = element.parent();
             }
@@ -846,7 +848,7 @@
       var targetX = event.pageX - $document[0].documentElement.scrollLeft;
       var targetY = event.pageY - ($window.pageYOffset || $document[0].documentElement.scrollTop);
       var targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
-      var targetScope = $helper.fetchScope(targetElement);
+      var targetScope = $helper.fetchScope(targetElement, sortableConfig.handleClass);
       var i, selected;
       if (!targetScope || !targetScope.type) {
         return;
