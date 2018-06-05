@@ -4,54 +4,56 @@ angular.module('demoApp', [
 ])
 .controller('DemoController', ['$scope', 'SortableEventBus', function ($scope, SortableEventBus) {
 
-  $scope.rows = [
-    {
-      name: "row1", 
-      items: [
-        {name: "row1-item1"},
-        {name: "row1-item2"},
-        {name: "row1-item3"},
-        {name: "row1-item4"},
-        {name: "row1-item5"},
-        {name: "row1-item6"},
-        {name: "row1-item7"},
-        {name: "row1-item8"},
-        {name: "row1-item9"},
-        {name: "row1-item10"}
-      ]
-    },
-    {
-      name: "row2", 
-      items: [
-        {name: "row2-item1"},
-        {name: "row2-item2"},
-        {name: "row2-item3"},
-        {name: "row2-item4"}
-      ]
-    },
-    {
-      name: "row3", 
-      items: [
-        {name: "row3-item1"},
-        {name: "row3-item2"},
-        {name: "row3-item3"},
-        {name: "row3-item4"}
-      ]
-    },
-    {
-      name: "row4", 
-      items: [
-        {name: "row4-item1"},
-        {name: "row4-item2"},
-        {name: "row4-item3"},
-        {name: "row4-item4"}
-      ]
-    },
-    {
-      name: "row5-empty",
-      items: []
-    }
-  ];
+  $scope.rowsContainer = { // Need to wrap this in a container to maintain a reference when modifying entire model
+    rows: [
+      {
+        name: "row1", 
+        items: [
+          {name: "row1-item1"},
+          {name: "row1-item2"},
+          {name: "row1-item3"},
+          {name: "row1-item4"},
+          {name: "row1-item5"},
+          {name: "row1-item6"},
+          {name: "row1-item7"},
+          {name: "row1-item8"},
+          {name: "row1-item9"},
+          {name: "row1-item10"}
+        ]
+      },
+      {
+        name: "row2", 
+        items: [
+          {name: "row2-item1"},
+          {name: "row2-item2"},
+          {name: "row2-item3"},
+          {name: "row2-item4"}
+        ]
+      },
+      {
+        name: "row3", 
+        items: [
+          {name: "row3-item1"},
+          {name: "row3-item2"},
+          {name: "row3-item3"},
+          {name: "row3-item4"}
+        ]
+      },
+      {
+        name: "row4", 
+        items: [
+          {name: "row4-item1"},
+          {name: "row4-item2"},
+          {name: "row4-item3"},
+          {name: "row4-item4"}
+        ]
+      },
+      {
+        name: "row5-empty",
+        items: []
+      }
+    ];
+  };
 
   var eventBus = new SortableEventBus(["deselectAll", "deselect", "getSelected"]);
 
@@ -79,7 +81,8 @@ angular.module('demoApp', [
       console.log("order changed");
       console.log(eventArgs);
     },
-    eventBus: eventBus
+    eventBus: eventBus,
+    immutable: require("Immutable")
   };
 
   // Deleting selected

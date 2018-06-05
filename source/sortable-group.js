@@ -13,11 +13,23 @@
   mainModule.directive('asSortableGroup',
     function () {
       return {
+        require: ['?ngModel'],
         restrict: 'A',
         controller: 'as.sortable.sortableGroupController',
         scope: true,
-        link: function(scope, element, attrs) {
+        link: function(scope, element, attrs, ngModel) {
           scope.options = {};
+          scope.modelReference = ngModel[0];
+          var modelAttributeReference = attrs["modelAttributeReference"];
+
+          scope.setModelValue = function(modelValue) {
+            scope.modelReference[modelAttributeReference] = modelValue;
+          };
+
+          scope.getModelValue = function() {
+            return scope.modelReference[modelAttributeReference];
+          }
+
           var callbacks;
 
           var pointerUpCallback = function(e) {

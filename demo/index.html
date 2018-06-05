@@ -5,6 +5,8 @@
     <link rel="stylesheet" type="text/css" href="app.css">
 
     <script src="/demo/bower_components/angular/angular.min.js"></script>
+    <script src="/demo/immutability-helper-bundle.js"></script>
+
     <script
   src="https://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -21,8 +23,8 @@
 
   </head>
   <body ng-app="demoApp">
-    <div as-sortable-group="sortableOptions" class="rows-container" ng-controller="DemoController">
-      <div class="row" ng-repeat="row in rows">
+    <div as-sortable-group="sortableOptions" class="rows-container" ng-model="rowsContainer" model-attribute-reference="rows" ng-controller="DemoController">
+      <div class="row" ng-repeat="row in rowsContainer.rows">
         <div class="row-name" ng-bind="row.name"></div>
         <div class="items-container" as-sortable as-row-number="$index" ng-model="row.items">
           <div class="item" as-sortable-item ng-repeat="item in row.items">

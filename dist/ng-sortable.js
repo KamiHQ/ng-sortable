@@ -964,10 +964,18 @@
      * @param itemData - the item model data.
      */
     $scope.insertItem = function (index, itemData) {
-      if ($scope.options.allowDuplicates) {
-        $scope.modelValue.splice(index, 0, angular.copy(itemData));
+      if ($scope.groupScope.options.immutable) {
+        if ($scope.options.allowDuplicates) {
+          $scope.modelValue.splice(index, 0, angular.copy(itemData));
+        } else {
+          $scope.modelValue.splice(index, 0, itemData);
+        }
       } else {
-        $scope.modelValue.splice(index, 0, itemData);
+        if ($scope.options.allowDuplicates) {
+          $scope.modelValue.splice(index, 0, angular.copy(itemData));
+        } else {
+          $scope.modelValue.splice(index, 0, itemData);
+        }
       }
     };
 

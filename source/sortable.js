@@ -29,10 +29,20 @@
      * @param itemData - the item model data.
      */
     $scope.insertItem = function (index, itemData) {
-      if ($scope.options.allowDuplicates) {
-        $scope.modelValue.splice(index, 0, angular.copy(itemData));
+      return;
+      if ($scope.groupScope.options.immutable) {
+        var Immutable = $scope.groupScope.options.immutable;
+        if ($scope.options.allowDuplicates) {
+          $scope.modelValue = Immutable($scope.modelValue, {$splice: [ [ index, 0, angular.copy(itemData) ] ]});
+        } else {
+          $scope.modelValue = Immutable($scope.modelValue, {$splice: [ [ index, 0, itemData ] ]});
+        }
       } else {
-        $scope.modelValue.splice(index, 0, itemData);
+        if ($scope.options.allowDuplicates) {
+          $scope.modelValue.splice(index, 0, angular.copy(itemData));
+        } else {
+          $scope.modelValue.splice(index, 0, itemData);
+        }
       }
     };
 
@@ -44,10 +54,25 @@
      */
     $scope.removeItem = function (item) {
       var removedItem = null;
-      var index = $scope.modelValue.indexOf(item);
-      if (index > -1) {
-        removedItem = $scope.modelValue.splice(index, 1)[0];
+
+      if ($scope.groupScope.options.immutable) {
+        //var index = $scope.modelValue.indexOf(item);
+        var Immutable = $scope.groupScope.options.immutable;
+        var groupModelValue = $scope.groupScope.getModelValue();
+
+        groupModelValue.indexOf($scope.modelValue);
+
+        if (index > -1) {
+          removedItem = $scope.modelValue[index];
+          $scope.modelValue = Immutable($scope.modelValue, {$splice: [ [ index, 1 ] ]});
+        }
+      } else {
+        var index = $scope.modelValue.indexOf(item);
+        if (index > -1) {
+          removedItem = $scope.modelValue.splice(index, 1)[0];
+        }
       }
+      
       return removedItem;
     };
 
