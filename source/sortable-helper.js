@@ -283,7 +283,7 @@
             },
             isOrderChanged: function () {
               var allSame = true;
-              if(!this.index) {
+              if(this.index === null) {
                 return false;
               }
               for(var i = 0; i < this.sources.length; i++) {
