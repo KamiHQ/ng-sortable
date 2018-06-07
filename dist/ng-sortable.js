@@ -854,12 +854,12 @@
       var targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
       var targetScope = $helper.fetchScope(targetElement, sortableConfig.handleClass);
       var i, selected;
+      $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
+      
       if (!targetScope || !targetScope.type) {
         return;
       }
-
-      $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
-
+      
       if(targetScope.type === 'item') {
         // decide where to insert placeholder based on target element and current placeholder if is present
         targetElement = targetScope.element;
