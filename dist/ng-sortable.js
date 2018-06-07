@@ -979,7 +979,19 @@
      */
     $scope.removeItem = function (item) {
       var removedItem = null;
-      var index = $scope.modelValue.indexOf(item);
+      var index = -1;
+
+      if(item.$$hashKey) {
+        for(var i = 0; i < $scope.modelValue.length; i++) {
+          if($scope.modelValue[i].$$hashKey === item.$$hashKey) {
+            index = i;
+            break;
+          }
+        }
+      } else {
+        index = $scope.modelValue.indexOf(item);
+      }
+
       if (index > -1) {
         removedItem = $scope.modelValue.splice(index, 1)[0];
       }
