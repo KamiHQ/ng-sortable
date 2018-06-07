@@ -113,6 +113,10 @@
             eventBus.on('getSelected', function(){
               return scope.selected;
             });
+
+            eventBus.on('getIsDragging', function(){
+              return scope.dragging;
+            });
           }
 
           scope.$watch(attrs.asSortableGroup, function (newVal, oldVal) {
