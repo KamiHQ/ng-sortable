@@ -1,0 +1,43 @@
+#sortableContainer {
+  overflow: auto;
+  height: 90%;
+}
+
+.rows-container {
+  display: inline-block;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+  outline: 1px solid silver;
+}
+
+.row-name{
+  flex: 0 0 200px;
+}
+
+.items-container {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.items-container:hover {
+  overflow-x: scroll;
+}
+
+.item {
+  padding: 20px;
+  margin: 5px;
+  outline: 1px solid black;
+}
+
+.as-sortable-drag {
+  display: block!important;
+}
+
+.as-sortable-item, .as-sortable-placeholder {
+  display: block!important;
+}

@@ -63,6 +63,65 @@
       return removedItem;
     };
 
+    var scrollState = {
+      interval: null,
+      scroll: function(x, y) { // x, y is the distance travelled in some time frame
+        var newScrollPosition = {
+          left: $scope.scrollContainer.scrollLeft + x,
+          top: $scope.scrollContainer.scrollTop + y
+        };
+        $scope.scrollContainer.scroll(newScrollPosition);
+      },
+      setScrollSpeed: function(scrollVector) { // x, y is a velocity vector representing the scroll speed
+        var x = scrollVector[0];
+        var y = scrollVector[1];
+        if(this.interval) this.cancel();
+        if((x === 0) && (y === 0)) return;
+        var self = this;
+        this.interval = setInterval(function(){
+          self.scroll(x, y);
+        }, 10);
+        self.scroll(x, y);
+      },
+      cancel: function() {
+        clearInterval(this.interval);
+        this.interval = null;
+      }
+    };
+
+    /**
+    * Watch the scroll Container for auto-scrolling
+    */
+    $scope.checkScrollContainer = function(event) {
+      if(!$scope.scrollContainer) return;
+      var scrollContainerRect = $scope.scrollContainer.getBoundingClientRect();
+      var ghostDiv = $scope.groupScope.dragState.dragElementsContainer[0];
+      if(!ghostDiv) return;
+      var ghostRect = ghostDiv.getBoundingClientRect();
+      var threshold = 5;
+      var scrollSpeed = $scope.scrollSpeed || 5;
+
+
+      var scrollVector = [0, 0];
+      if(ghostRect.right >= (scrollContainerRect.right - threshold)) { // Does the ghost overlap the right bound
+        scrollVector[0] += scrollSpeed;
+      } else if(ghostRect.left <= (scrollContainerRect.left + threshold)) { // Does the ghost overlap the left bound
+        scrollVector[0] -= scrollSpeed;
+      }
+
+      if(ghostRect.bottom >= (scrollContainerRect.bottom - threshold)) { // Does the ghost overlap the bottom bound
+        scrollVector[1] += scrollSpeed;
+      } else if(ghostRect.top <= (scrollContainerRect.top + threshold)) { // Does the ghost overlap the top bound
+        scrollVector[1] -= scrollSpeed;
+      }
+
+      scrollState.setScrollSpeed(scrollVector);
+    };
+
+    $scope.terminateScroll = function(event) {
+      scrollState.cancel();
+    };
+
   }]);
 
   /**
@@ -115,6 +174,16 @@
           // Set row order
           scope.$watch(attrs.asRowNumber, function (newVal, oldVal) {
             scope.rowIndex = newVal;
+          });
+
+          // Set scroll container
+          scope.$watch(attrs.asScrollContainer, function(newVal, oldVal) {
+            scope.scrollContainer = newVal;
+          });
+
+          // Set scroll speed
+          scope.$watch(attrs.asScrollSpeed, function(newVal, oldVal) {
+            scope.scrollSpeed = parseInt(newVal);
           });
         }
       };

@@ -190,6 +190,7 @@
 
             event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragMove(event);
+            scope.itemScope.sortableScope.checkScrollContainer(event);
           };
 
           /**
@@ -204,6 +205,7 @@
             }
             event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragEnd(event);
+            scope.itemScope.sortableScope.terminateScroll(event);
             dragHandled = false;
             unBindEvents();
           };

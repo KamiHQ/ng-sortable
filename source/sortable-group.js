@@ -199,11 +199,11 @@
     $scope.selected = [];
 
     // Functions associated with moving multiple selected items
-    var dragState = {
+    $scope.dragState = {
       containment: null,
       dragElementsContainer: null,
       dragItemsInfo: null,
-      itemPosition: null
+      itemPosition: null,
     };
     /**
      * Get position of place holder among item elements in itemScope.
@@ -238,15 +238,15 @@
     }
 
     function addDragClasses() {
-      dragState.containment.css('cursor', 'move');
-      dragState.containment.css('cursor', '-webkit-grabbing');
-      dragState.containment.css('cursor', '-moz-grabbing');
-      dragState.containment.addClass('as-sortable-un-selectable');
+      $scope.dragState.containment.css('cursor', 'move');
+      $scope.dragState.containment.css('cursor', '-webkit-grabbing');
+      $scope.dragState.containment.css('cursor', '-moz-grabbing');
+      $scope.dragState.containment.addClass('as-sortable-un-selectable');
     }
 
     function removeDragClasses() {
-      dragState.containment.css('cursor', '');
-      dragState.containment.removeClass('as-sortable-un-selectable');
+      $scope.dragState.containment.css('cursor', '');
+      $scope.dragState.containment.removeClass('as-sortable-un-selectable');
     }
 
     $scope.dragging = false;
@@ -259,12 +259,12 @@
       } else {
         $scope.dragging = true;
       }
-      dragState.dragElementsContainer = angular.element('<div>').addClass(sortableConfig.dragClass);
-      dragState.containment = angular.element($document[0].body);
-      dragState.dragItemsInfo = $helper.dragItems($scope.selected);
+      $scope.dragState.dragElementsContainer = angular.element('<div>').addClass(sortableConfig.dragClass);
+      $scope.dragState.containment = angular.element($document[0].body);
+      $scope.dragState.dragItemsInfo = $helper.dragItems($scope.selected);
 
       var itemElement = $helper.findAncestor(event.target, '.' + sortableConfig.itemClass);
-      dragState.itemPosition = $helper.positionStarted(eventObj, itemElement, scrollableContainer);
+      $scope.dragState.itemPosition = $helper.positionStarted(eventObj, itemElement, scrollableContainer);
 
       for(var i = 0; i < $scope.selected.length; i++) {
         var selected = $scope.selected[i];
@@ -272,11 +272,11 @@
         var dragElement = selected.createDragElement(cloning);
         var placeHolder = selected.createPlaceholder(true);
         var placeElement = selected.createPlaceElement(!cloning);
-        dragState.dragElementsContainer.append(dragElement);
+        $scope.dragState.dragElementsContainer.append(dragElement);
       }
-      dragState.containment.append(dragState.dragElementsContainer);
+      $scope.dragState.containment.append($scope.dragState.dragElementsContainer);
 
-      $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
+      $helper.movePosition(eventObj, $scope.dragState.dragElementsContainer, $scope.dragState.itemPosition, $scope.dragState.containment, 'absolute', scrollableContainer);
       $scope.$apply(function(){
         $scope.callbacks.dragStart(eventObj);
       });
@@ -290,12 +290,12 @@
       var targetElement = angular.element($document[0].elementFromPoint(targetX, targetY));
       var targetScope = $helper.fetchScope(targetElement, sortableConfig.handleClass);
       var i, selected;
-      $helper.movePosition(eventObj, dragState.dragElementsContainer, dragState.itemPosition, dragState.containment, 'absolute', scrollableContainer);
+      $helper.movePosition(eventObj, $scope.dragState.dragElementsContainer, $scope.dragState.itemPosition, $scope.dragState.containment, 'absolute', scrollableContainer);
       
       if (!targetScope || !targetScope.type) {
         return;
       }
-      
+
       if(targetScope.type === 'item') {
         // decide where to insert placeholder based on target element and current placeholder if is present
         targetElement = targetScope.element;
@@ -303,12 +303,12 @@
         for(i = 0; i < $scope.selected.length; i++) {
           selected = $scope.selected[i];
           if (placeholderIndex < 0) {
-            selected.insertBefore(targetElement, targetScope, dragState.dragItemsInfo);
+            selected.insertBefore(targetElement, targetScope, $scope.dragState.dragItemsInfo);
           } else {
             if (placeholderIndex <= targetScope.index()) {
-              selected.insertAfter(targetElement, targetScope, dragState.dragItemsInfo);
+              selected.insertAfter(targetElement, targetScope, $scope.dragState.dragItemsInfo);
             } else {
-              selected.insertBefore(targetElement, targetScope, dragState.dragItemsInfo);
+              selected.insertBefore(targetElement, targetScope, $scope.dragState.dragItemsInfo);
             }
           }
         }
@@ -319,7 +319,7 @@
             for(i = 0; i < $scope.selected.length; i++) {
               selected = $scope.selected[i];
               selected.appendPlaceHolder(targetElement);
-              dragState.dragItemsInfo.moveTo(targetScope, targetScope.modelValue.length);
+              $scope.dragState.dragItemsInfo.moveTo(targetScope, targetScope.modelValue.length);
             }
           }
         }
@@ -340,17 +340,17 @@
         var selected = $scope.selected[i];
         selected.rollbackDragChanges();
       }
-      dragState.dragElementsContainer.remove();
-      dragState.dragElementsContainer = null;
+      $scope.dragState.dragElementsContainer.remove();
+      $scope.dragState.dragElementsContainer = null;
 
       $scope.$apply(function(){
         if(cancel) {
           $scope.callbacks.dragCancel(eventObj);
         } else {
           var runCallback = function(){};
-          var eventArgs = dragState.dragItemsInfo.eventArgs();
-          if(dragState.dragItemsInfo.allSameParent()){
-            if(dragState.dragItemsInfo.isOrderChanged()){
+          var eventArgs = $scope.dragState.dragItemsInfo.eventArgs();
+          if($scope.dragState.dragItemsInfo.allSameParent()){
+            if($scope.dragState.dragItemsInfo.isOrderChanged()){
               runCallback = function(){
                 $scope.callbacks.orderChanged(eventArgs);
               };
@@ -361,12 +361,12 @@
             };
           }
 
-          dragState.dragItemsInfo.apply();
+          $scope.dragState.dragItemsInfo.apply();
           runCallback();
           $scope.callbacks.dragEnd(eventObj);
         }
-        dragState.dragItemsInfo = null;
-        dragState.itemPosition = null;
+        $scope.dragState.dragItemsInfo = null;
+        $scope.dragState.itemPosition = null;
       });
     };
     

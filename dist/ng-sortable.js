@@ -767,7 +767,7 @@
       containment: null,
       dragElementsContainer: null,
       dragItemsInfo: null,
-      itemPosition: null
+      itemPosition: null,
     };
     /**
      * Get position of place holder among item elements in itemScope.
@@ -859,7 +859,7 @@
       if (!targetScope || !targetScope.type) {
         return;
       }
-      
+
       if(targetScope.type === 'item') {
         // decide where to insert placeholder based on target element and current placeholder if is present
         targetElement = targetScope.element;
@@ -1002,6 +1002,13 @@
       return removedItem;
     };
 
+    /**
+    * Watch the scroll Container for auto-scrolling
+    */
+    $scope.checkScrollContainer = function(event) {
+      console.log(event);
+    };
+
   }]);
 
   /**
@@ -1054,6 +1061,11 @@
           // Set row order
           scope.$watch(attrs.asRowNumber, function (newVal, oldVal) {
             scope.rowIndex = newVal;
+          });
+
+          // Set scroll container
+          scope.$watch(attrs.asScrollContainer, function(newVal, oldVal) {
+            scope.scrollContainer = scrollContainer;
           });
         }
       };
@@ -1253,6 +1265,7 @@
 
             event.preventDefault();
             scope.itemScope.sortableScope.groupScope.dragMove(event);
+            scope.itemScope.sortableScope.checkScrollContainer(event);
           };
 
           /**
