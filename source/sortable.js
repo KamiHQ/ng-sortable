@@ -75,8 +75,12 @@
       setScrollSpeed: function(scrollVector) { // x, y is a velocity vector representing the scroll speed
         var x = scrollVector[0];
         var y = scrollVector[1];
-        if(this.interval) this.cancel();
-        if((x === 0) && (y === 0)) return;
+        if(this.interval) {
+          this.cancel();
+        }
+        if((x === 0) && (y === 0)) {
+          return;
+        }
         var self = this;
         this.interval = setInterval(function(){
           self.scroll(x, y);
@@ -93,10 +97,14 @@
     * Watch the scroll Container for auto-scrolling
     */
     $scope.checkScrollContainer = function(event) {
-      if(!$scope.scrollContainer) return;
+      if(!$scope.scrollContainer) {
+        return;
+      }
       var scrollContainerRect = $scope.scrollContainer.getBoundingClientRect();
       var ghostDiv = $scope.groupScope.dragState.dragElementsContainer[0];
-      if(!ghostDiv) return;
+      if(!ghostDiv) {
+        return;
+      }
       var ghostRect = ghostDiv.getBoundingClientRect();
       var threshold = 5;
       var scrollSpeed = $scope.scrollSpeed || 5;
