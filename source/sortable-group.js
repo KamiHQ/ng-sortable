@@ -263,10 +263,11 @@
       $scope.dragState.containment = angular.element($document[0].body);
       $scope.dragState.dragItemsInfo = $helper.dragItems($scope.selected);
 
+      var handleElement = null;
       if(event.target.classList.contains(sortableConfig.handleClass)){
-        var handleElement = angular.element(event.target);
+        handleElement = angular.element(event.target);
       } else {
-        var handleElement = $helper.findAncestor(event.target, '.' + sortableConfig.handleClass);
+        handleElement = $helper.findAncestor(event.target, '.' + sortableConfig.handleClass);
       }
       $scope.dragState.itemPosition = $helper.positionStarted(eventObj, handleElement, scrollableContainer);
 
