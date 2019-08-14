@@ -12,6 +12,7 @@
   flex-direction: column;
   margin: 10px;
   outline: 1px solid silver;
+  width: 500px;
 }
 
 .row-name{
@@ -22,6 +23,8 @@
   flex: 1;
   overflow: hidden;
   white-space: nowrap;
+  width: 100%;
+  text-align: center;
 }
 
 .items-container:hover {
