@@ -1205,9 +1205,21 @@
           scope.itemScope = itemController.scope;
           element.data('_scope', scope); // #144, work with angular debugInfoEnabled(false)
 
-          scope.$watchGroup(['sortableScope.isDisabled', 'sortableScope.options.longTouch'],
+          scope.$watchGroup(['itemScope.sortableScope.isDisabled', 'itemScope.sortableScope.options.longTouch', 'itemScope.sortableScope.groupScope.options.disabled'],
               function (newValues) {
-            if (isDisabled !== newValues[0]) {
+            // Settings from the group scope always takes precedence
+            if(newValues[2] !== null && newValues[2] !== undefined) {
+              if (isDisabled !== newValues[2]) {
+                isDisabled = newValues[2];
+                if (isDisabled) {
+                  unbindDrag();
+                } else {
+                  bindDrag();
+                }
+              } else if (!isDisabled) {
+                bindDrag();
+              }
+            } else if (isDisabled !== newValues[0]) {
               isDisabled = newValues[0];
               if (isDisabled) {
                 unbindDrag();

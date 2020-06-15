@@ -79,7 +79,12 @@ angular.module('demoApp', [
       console.log("order changed");
       console.log(eventArgs);
     },
-    eventBus: eventBus
+    eventBus: eventBus,
+    disabled: false
+  };
+
+  $scope.toggle_disabled = function() {
+    $scope.sortableOptions.disabled = !$scope.sortableOptions.disabled;
   };
 
   // Deleting selected
